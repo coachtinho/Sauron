@@ -6,11 +6,11 @@ Distributed Systems 2019-2020, 2nd semester project
 ## Authors
 
 *(fill-in line below with group identifier e.g. A07 or T22; and then delete this line)*  
-**Group CXX**
+**Group A36**
 
 ### Code identification
 
-In all the source files (including POMs), please replace __CXX__ with your group identifier.  
+In all the source files (including POMs), please replace __A36__ with your group identifier.  
 The group identifier is composed by Campus - A (Alameda) or T (Tagus) - and number - always with two digits.  
 This change is important for code dependency management, to make sure that your code runs using the correct components and not someone else's.
 
@@ -18,11 +18,11 @@ This change is important for code dependency management, to make sure that your 
 
 *(fill-in table below with team members; and then delete this line)*  
 
-| Number | Name              | User                             | Email                               |
-| -------|-------------------|----------------------------------| ------------------------------------|
-| 11111  | Alice Distributed | <https://github.com/AliceUser>   | <mailto:alice@tecnico.ulisboa.pt>   |
-| 22222  | Bob Systems       | <https://github.com/BobUser>     | <mailto:bob@tecnico.ulisboa.pt>     |
-| 33333  | Charlie Rules     | <https://github.com/CharlieUser> | <mailto:charlie@tecnico.ulisboa.pt> |
+| Number | Name              | User                             	| Email                               |
+| -------|-------------------|--------------------------------------| ------------------------------------|
+| 89470  | João Coutinho     | <https://github.com/jafonsoc> 		| <mailto:alice@tecnico.ulisboa.pt>   |
+| 89472  | João Porto        | <https://github.com/stopitcarl>  	| <mailto:joaofporto@tecnico.ulisboa.pt>     |
+| 89512  | Miguel Neves      | <https://github.com/BolachasDaAvo> 	| <mailto:charlie@tecnico.ulisboa.pt> |
 
 ### Task leaders
 
