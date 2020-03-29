@@ -1,6 +1,39 @@
-//
 // Protocol buffers definition for Silo server
-//
+
 syntax = "proto3";
 package pt.tecnico.sauron.silo.grpc;
 
+enum ResponseMessage {
+    INIT_SUCCESS = 0;
+    INIT_FAIL = 1;
+    CLEAR_SUCCESS = 2;
+    CLEAR_FAIL = 3;
+}
+
+message PingRequest {
+    string message = 1;
+}
+
+message PingResponse {
+    string message = 1;
+}
+
+message ClearRequest {
+}
+
+message ClearResponse {
+    ResponseMessage response = 1;
+}
+
+message InitRequest { // TODO: fill later
+}
+
+message InitResponse {
+    ResponseMessage response = 1;
+}
+
+// service
+
+service Sauron {
+    rpc ctrlPing(PingRequest) returns (PingResponse);
+}
