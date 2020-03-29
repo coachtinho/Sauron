@@ -1,7 +1,6 @@
 package pt.tecnico.sauron.silo.client;
 
-
-import pt.tecnico.sauron.silo.*;
+import pt.tecnico.sauron.silo.grpc.Silo.PingRequest;
 
 public class SiloClientApp {
 
@@ -14,15 +13,14 @@ public class SiloClientApp {
             System.out.printf("arg[%d] = %s%n", i, args[i]);
         }
 
-        String host = "me, myself and i";
-        int port = 420;
+        String host = "localhost";
+        int port = 8080;
 
         SiloFrontend frontend = new SiloFrontend(host, port);
 
-        PingRequest request = new PingRequest.newBuilder().setMessage("neves e coutinho").build();
+        PingRequest request = PingRequest.newBuilder().setMessage("olaaaaaaa").build();
 
-
-        PingResponse response = frontend.ctrlPing(request);
+        System.out.println(frontend.ctrlPing(request));
 
     }
 

@@ -2,9 +2,9 @@ package pt.tecnico.sauron.silo;
 
 import io.grpc.stub.StreamObserver;
 import pt.tecnico.sauron.silo.domain.SiloServer;
-import pt.tecnico.sauron.silo.grpc.*;
-import pt.tecnico.sauron.silo.grpc.Silo.*;
-
+import pt.tecnico.sauron.silo.grpc.Silo.PingRequest;
+import pt.tecnico.sauron.silo.grpc.Silo.PingResponse;
+import pt.tecnico.sauron.silo.grpc.SauronGrpc;
 
 public class SiloServerImpl extends SauronGrpc.SauronImplBase {
 

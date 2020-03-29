@@ -2,12 +2,9 @@ package pt.tecnico.sauron.silo.client;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import pt.tecnico.sauron.silo.*;
 import pt.tecnico.sauron.silo.grpc.SauronGrpc;
-
-
-import static pt.tecnico.sauron.silo.grpc.SauronGrpc.newBlockingStub;
-
+import pt.tecnico.sauron.silo.grpc.Silo.PingRequest;
+import pt.tecnico.sauron.silo.grpc.Silo.PingResponse;
 
 public class SiloFrontend {
 
@@ -32,6 +29,5 @@ public class SiloFrontend {
 
     public PingResponse ctrlPing(PingRequest request) {
         return stub.ctrlPing(request);
-
     }
 }
