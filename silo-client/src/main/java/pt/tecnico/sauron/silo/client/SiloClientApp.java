@@ -1,6 +1,8 @@
 package pt.tecnico.sauron.silo.client;
 
+import io.grpc.StatusRuntimeException;
 import pt.tecnico.sauron.silo.grpc.Silo.PingRequest;
+import pt.tecnico.sauron.silo.grpc.Silo.PingResponse;
 
 public class SiloClientApp {
 
@@ -18,9 +20,17 @@ public class SiloClientApp {
 
         SiloFrontend frontend = new SiloFrontend(host, port);
 
-        PingRequest request = PingRequest.newBuilder().setMessage("olaaaaaaa").build();
+        try {
+            PingRequest request = PingRequest.newBuilder().setMessage("").build();
+            PingResponse response = frontend.ctrlPing(request);
+            System.out.println(response);
+        } catch (StatusRuntimeException e) {
+            System.out.println(e.getMessage());
+        } finally {
+            frontend.close();
+        }
 
-        System.out.println(frontend.ctrlPing(request));
+        System.out.println("bye!");
 
     }
 

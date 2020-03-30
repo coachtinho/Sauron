@@ -30,4 +30,8 @@ public class SiloFrontend {
     public PingResponse ctrlPing(PingRequest request) {
         return stub.ctrlPing(request);
     }
+
+    public void close(){
+        channel.shutdown();
+    }
 }
