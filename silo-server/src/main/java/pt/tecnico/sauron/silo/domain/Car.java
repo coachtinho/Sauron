@@ -1,23 +1,27 @@
 package pt.tecnico.sauron.silo.domain;
 
-import pt.tecnico.sauron.silo.grpc.Silo.ResponseMessage;
-
-import java.lang.String;
-
 public class Car extends Observation {
 
-    // Matrícula _id
+    String _id;
 
-    public Car() {        
+    public Car(String id, Camera cam) {
+        super(cam);
+        _id = id;
+    }
+
+    @Override
+    public String getId() {
+        return _id;
+    }
+
+    @Override
+    public String getType() {
+        return "car";
     }
 
     @Override
     public synchronized String toString() {
-        return "hey";
+        return "Car," + _id + "," + super.toString();
     }
 
-    public ResponseMessage play() {
-        return ResponseMessage.CLEAR_FAIL;
-
-    }
 }
