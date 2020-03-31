@@ -1,26 +1,24 @@
 package pt.tecnico.sauron.silo.domain;
 
-import pt.tecnico.sauron.silo.grpc.Silo.ResponseMessage;
-
 import java.lang.String;
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class SiloServer {
-    private ArrayList<Camera> _cameras;
-    private ArrayList<Car> _observations;
+    private Map<String, Camera> _cameras;
+    // private ArrayList<Car> _observations; <-- use what coutinho codes
 
     public SiloServer() {
-        _cameras = new ArrayList<>();
-        _observations = new ArrayList<>();
+        _cameras = new HashMap<>();
+        // _observations = new ArrayList<>();
     }
 
-    @Override
-    public synchronized String toString() {
-        return "hey";
+    // TODO: Create custom exception
+    public boolean registerCamera(Camera camera) {
+        if (_cameras.containsKey(camera.getName()))
+            return false;
+        _cameras.put(camera.getName(), camera);
+        return true;
     }
 
-    public ResponseMessage play() {
-        return ResponseMessage.CLEAR_FAIL;
-
-    }
 }

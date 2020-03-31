@@ -1,23 +1,19 @@
 package pt.tecnico.sauron.silo.domain;
 
-import pt.tecnico.sauron.silo.grpc.Silo.ResponseMessage;
-
 import java.lang.String;
 
 public class Person extends Observation {
 
-    // ID _id
-    
-    public Person() {
+    String _name;
+
+    public Person(String name, Camera cam) {
+        super(cam);
+        _name = name;
     }
 
     @Override
     public synchronized String toString() {
-        return "hey";
+        return "Person," + _name + "," + super.toString();
     }
 
-    public ResponseMessage play() {
-        return ResponseMessage.CLEAR_FAIL;
-
-    }
 }
