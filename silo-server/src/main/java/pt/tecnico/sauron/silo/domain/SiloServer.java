@@ -5,14 +5,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.HashMap;
 
 public class SiloServer {
-    private ArrayList<Camera> _cameras;
+    private Map<String, Camera> _cameras;
     private LinkedHashMap<String, ArrayList<Observation>> _cars;
     private LinkedHashMap<String, ArrayList<Observation>> _persons;
 
     public SiloServer() {
-        _cameras = new ArrayList<>();
+        _cameras = new HashMap<>();
         _cars = new LinkedHashMap<>();
         _persons = new LinkedHashMap<>();
     }
@@ -81,9 +82,12 @@ public class SiloServer {
         return list;
     }
 
-    @Override
-    public synchronized String toString() {
-        return "hey";
+    // TODO: Create custom exception
+    public boolean registerCamera(Camera camera) {
+        if (_cameras.containsKey(camera.getName()))
+            return false;
+        _cameras.put(camera.getName(), camera);
+        return true;
     }
 
 }

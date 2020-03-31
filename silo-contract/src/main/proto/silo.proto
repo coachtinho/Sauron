@@ -9,6 +9,7 @@ enum ResponseMessage {
     SUCCESS = 0;
     INIT_FAIL = 1;
     CLEAR_FAIL = 2;
+    
 }
 
 message PingRequest {
@@ -53,7 +54,21 @@ message SearchRequest {
 }
 
 message TrackResponse {
-    ObservationMessage finding = 1;
+  ObservationMessage finding = 1;
+}
+
+message Coordinates {
+   double latitude = 1; // assure precision to 6 decimal cases (float barely reaches 5 at 128-256 range)
+   double longitude = 2;
+ }
+
+message CameraRegistrationRequest {    
+        string name = 1;
+        Coordinates coords = 2;
+}
+
+message CameraRegistrationResponse {    
+    ResponseMessage response = 1;
 }
 
 // service
@@ -61,4 +76,5 @@ message TrackResponse {
 service Sauron {
     rpc ctrlPing(PingRequest) returns (PingResponse);
     rpc track(SearchRequest) returns (ObservationMessage);
+    rpc camJoin(CameraRegistrationRequest) returns (CameraRegistrationResponse);
 }
