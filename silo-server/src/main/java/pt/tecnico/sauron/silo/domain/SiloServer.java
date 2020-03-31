@@ -6,16 +6,17 @@ import java.util.List;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Collections;
 
 public class SiloServer {
     private Map<String, Camera> _cameras;
-    private LinkedHashMap<String, ArrayList<Observation>> _cars;
-    private LinkedHashMap<String, ArrayList<Observation>> _persons;
+    private Map<String, ArrayList<Observation>> _cars;
+    private Map<String, ArrayList<Observation>> _persons;
 
     public SiloServer() {
-        _cameras = new HashMap<>();
-        _cars = new LinkedHashMap<>();
-        _persons = new LinkedHashMap<>();
+        _cameras = Collections.synchronizedMap(new HashMap<>());
+        _cars = Collections.synchronizedMap(new LinkedHashMap<>());
+        _persons = Collections.synchronizedMap(new LinkedHashMap<>());
     }
 
     // Track command
@@ -32,7 +33,7 @@ public class SiloServer {
         if (observations.containsKey(id)) {
             ArrayList<Observation> list = observations.get(id);
 
-            // sorting is handled in insertion so the first element is always most recent
+            // sorting is handled in insertion so the first element is always the most recent
             return list != null ? list.get(0) : null;
         }
 

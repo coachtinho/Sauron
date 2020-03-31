@@ -48,13 +48,13 @@ message ObservationMessage {
     google.protobuf.Timestamp timestamp = 3;
 }
 
+message SearchResponse {
+  repeated ObservationMessage observation = 1;
+}
+
 message SearchRequest {
     string type = 1;
     string id = 2;
-}
-
-message TrackResponse {
-  ObservationMessage finding = 1;
 }
 
 message Coordinates {
@@ -77,4 +77,6 @@ service Sauron {
     rpc ctrlPing(PingRequest) returns (PingResponse);
     rpc track(SearchRequest) returns (ObservationMessage);
     rpc camJoin(CameraRegistrationRequest) returns (CameraRegistrationResponse);
+    rpc trace(SearchRequest) returns (SearchResponse);
+    rpc trackMatch(SearchRequest) returns (SearchResponse);
 }

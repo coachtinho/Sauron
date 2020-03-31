@@ -2,16 +2,26 @@ package pt.tecnico.sauron.silo.domain;
 
 public class Car extends Observation {
 
-    String _name;
+    String _id;
 
-    public Car(String name, Camera cam) {
+    public Car(String id, Camera cam) {
         super(cam);
-        _name = name;
+        _id = id;
+    }
+
+    @Override
+    public String getId() {
+        return _id;
+    }
+
+    @Override
+    public String getType() {
+        return "car";
     }
 
     @Override
     public synchronized String toString() {
-        return "Car," + _name + "," + super.toString();
+        return "Car," + _id + "," + super.toString();
     }
 
 }
