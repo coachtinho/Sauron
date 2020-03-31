@@ -3,6 +3,8 @@
 syntax = "proto3";
 package pt.tecnico.sauron.silo.grpc;
 
+import "google/protobuf/timestamp.proto";
+
 enum ResponseMessage {
     SUCCESS = 0;
     INIT_FAIL = 1;
@@ -39,8 +41,24 @@ message ReportResponse {
     ResponseMessage response = 1;
 }
 
+message ObservationMessage {
+    string type = 1;
+    string id = 2;
+    google.protobuf.Timestamp timestamp = 3;
+}
+
+message SearchRequest {
+    string type = 1;
+    string id = 2;
+}
+
+message TrackResponse {
+    ObservationMessage finding = 1;
+}
+
 // service
 
 service Sauron {
     rpc ctrlPing(PingRequest) returns (PingResponse);
+    rpc track(SearchRequest) returns (ObservationMessage);
 }
