@@ -1,6 +1,7 @@
 package pt.tecnico.sauron.spotter;
 
 import pt.tecnico.sauron.silo.client.SiloFrontend;
+import pt.tecnico.sauron.silo.grpc.Silo.PingRequest;
 
 public class Spotter {
 
@@ -11,23 +12,24 @@ public class Spotter {
     }
 
     public void spot(String type, String id) {
-        System.out.println("Executiong spot");
+        System.out.println("Executing spot");
     }
     
     public void trail(String type, String id) {
-        System.out.println("Executiong trail");
+        System.out.println("Executing trail");
     }
 
     public void ping() {
-        System.out.println("Executiong ping");
+        PingRequest request = PingRequest.newBuilder().setMessage("Hello server, are you there!").build();
+        System.out.println("Server answered with:" + frontend.ctrlPing(request).getMessage());
     }
 
     public void clear() {
-        System.out.println("Executiong clear");
+        System.out.println("Executing clear");
     }
 
     public void init() {
-        System.out.println("Executiong init");
+        System.out.println("Executing init");
     }
 
     public void help() {

@@ -24,11 +24,12 @@ public class SpotterApp {
 
 		Spotter spotter = new Spotter(args[0], Integer.parseInt(args[1]));
 		String[] arguments;
+		String keyword;
 		
 		// Main cycle
 		try (Scanner scanner = new Scanner(System.in)) {
 			while (true) {
-				String keyword = scanner.next();
+				keyword = scanner.next();
 
 				switch (keyword) {
 					case "spot":

@@ -15,7 +15,8 @@
 
 	<properties>
 		<!-- see parent POM for more properties -->
-
+		<server.host>localhost</server.host>
+		<server.port>8080</server.port>
 		<mainclass>pt.tecnico.sauron.spotter.SpotterApp</mainclass>
 	</properties>
 
@@ -65,6 +66,8 @@
 				<configuration>
 					<mainClass>${mainclass}</mainClass>
 					<arguments>
+						<argument>${server.host}</argument>
+						<argument>${server.port}</argument>
 					</arguments>
 				</configuration>
 			</plugin>
