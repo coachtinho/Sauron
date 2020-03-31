@@ -3,15 +3,10 @@ package pt.tecnico.sauron.silo.domain;
 import pt.tecnico.sauron.silo.grpc.Silo.ResponseMessage;
 
 import java.lang.String;
-import java.util.ArrayList;
 
-public class SiloServer {
-    private ArrayList<Camera> _cameras;
-    private ArrayList<Car> _observations;
+public class Camera {
 
-    public SiloServer() {
-        _cameras = new ArrayList<>();
-        _observations = new ArrayList<>();
+    public Camera() {
     }
 
     @Override

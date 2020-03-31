@@ -4,10 +4,9 @@ syntax = "proto3";
 package pt.tecnico.sauron.silo.grpc;
 
 enum ResponseMessage {
-    INIT_SUCCESS = 0;
+    SUCCESS = 0;
     INIT_FAIL = 1;
-    CLEAR_SUCCESS = 2;
-    CLEAR_FAIL = 3;
+    CLEAR_FAIL = 2;
 }
 
 message PingRequest {
@@ -29,6 +28,14 @@ message InitRequest { // TODO: fill later
 }
 
 message InitResponse {
+    ResponseMessage response = 1;
+}
+
+message ReportRequest {
+
+}
+
+message ReportResponse {
     ResponseMessage response = 1;
 }
 

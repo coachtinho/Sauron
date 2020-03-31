@@ -18,12 +18,13 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
 
         if (input == null || input.isBlank()) {
             responseObserver.onError(INVALID_ARGUMENT.withDescription("Message cannot be empty!").asRuntimeException());
+        } else {
+
+            final String output = "Hello " + input + "!";
+            final PingResponse response = PingResponse.newBuilder().setMessage(output).build();
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
         }
-        
-        final String output = "Hello " + input + "!";
-        final PingResponse response = PingResponse.newBuilder().setMessage(output).build();
-        responseObserver.onNext(response);
-        responseObserver.onCompleted();
     }
 
 }
