@@ -1,6 +1,7 @@
 package pt.tecnico.sauron.silo.domain;
 
 import java.lang.String;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -9,8 +10,7 @@ public class SiloServer {
     // private ArrayList<Car> _observations; <-- use what coutinho codes
 
     public SiloServer() {
-        _cameras = new HashMap<>();
-        // _observations = new ArrayList<>();
+        _cameras = Collections.synchronizedMap(new HashMap<>());
     }
 
     // TODO: Create custom exception

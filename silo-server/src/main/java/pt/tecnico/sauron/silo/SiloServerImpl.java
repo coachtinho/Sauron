@@ -1,9 +1,11 @@
 package pt.tecnico.sauron.silo;
 
 import static io.grpc.Status.INVALID_ARGUMENT;
+import static io.grpc.Status.ALREADY_EXISTS;
 
 import io.grpc.stub.StreamObserver;
 import pt.tecnico.sauron.silo.domain.Camera;
+import pt.tecnico.sauron.silo.domain.SiloException;
 import pt.tecnico.sauron.silo.domain.SiloServer;
 import pt.tecnico.sauron.silo.grpc.Silo.CameraRegistrationRequest;
 import pt.tecnico.sauron.silo.grpc.Silo.CameraRegistrationResponse;
@@ -43,9 +45,13 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
             responseObserver
                     .onError(INVALID_ARGUMENT.withDescription("Coordinates cannot be null!").asRuntimeException());
         else {
-
-            Camera cam = new Camera(name, request.getCoords().getLongitude(), request.getCoords().getLatitude());
-            siloServer.registerCamera(cam);
+            try {
+                Camera cam = new Camera(name, request.getCoords().getLongitude(), request.getCoords().getLatitude());
+                siloServer.registerCamera(cam);
+            } catch (SiloException e) {                
+                responseObserver.onError(
+                        ALREADY_EXISTS.withDescription("Camera with taht id already exists!").asRuntimeException());
+            }
 
             final CameraRegistrationResponse response = CameraRegistrationResponse.newBuilder()
                     .setResponse(ResponseMessage.SUCCESS).build();
