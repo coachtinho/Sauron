@@ -9,6 +9,8 @@ import pt.tecnico.sauron.silo.domain.Camera;
 import pt.tecnico.sauron.silo.domain.SiloException;
 import pt.tecnico.sauron.silo.domain.SiloServer;
 import pt.tecnico.sauron.silo.grpc.Silo.SearchResponse;
+import pt.tecnico.sauron.silo.grpc.Silo.CameraInfoRequest;
+import pt.tecnico.sauron.silo.grpc.Silo.CameraInfoResponse;
 import pt.tecnico.sauron.silo.grpc.Silo.CameraRegistrationRequest;
 import pt.tecnico.sauron.silo.grpc.Silo.CameraRegistrationResponse;
 import pt.tecnico.sauron.silo.grpc.Silo.ClearRequest;
@@ -67,13 +69,14 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
         } else if (type.equals("car")) {
             obs = siloServer.trackCar(id);
         } else {
-            responseObserver.onError(INVALID_ARGUMENT.withDescription("Type is not a valid observation!").asRuntimeException());
+            responseObserver
+                    .onError(INVALID_ARGUMENT.withDescription("Type is not a valid observation!").asRuntimeException());
             return;
         }
 
         Timestamp timestamp = Timestamp.newBuilder().setSeconds(obs.getInstant().getEpochSecond()).build();
-        final ObservationMessage response = ObservationMessage.newBuilder()
-            .setId(obs.getId()).setType(obs.getType()).setTimestamp(timestamp).build();
+        final ObservationMessage response = ObservationMessage.newBuilder().setId(obs.getId()).setType(obs.getType())
+                .setTimestamp(timestamp).build();
         responseObserver.onNext(response);
         responseObserver.onCompleted();
     }
@@ -97,7 +100,8 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
         } else if (type.equals("car")) {
             observations = siloServer.traceCar(id);
         } else {
-            responseObserver.onError(INVALID_ARGUMENT.withDescription("Type is not a valid observation!").asRuntimeException());
+            responseObserver
+                    .onError(INVALID_ARGUMENT.withDescription("Type is not a valid observation!").asRuntimeException());
             return;
         }
 
@@ -105,8 +109,8 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
 
         for (Observation obs : observations) {
             Timestamp timestamp = Timestamp.newBuilder().setSeconds(obs.getInstant().getEpochSecond()).build();
-            final ObservationMessage observation = ObservationMessage.newBuilder()
-                .setId(obs.getId()).setType(obs.getType()).setTimestamp(timestamp).build();
+            final ObservationMessage observation = ObservationMessage.newBuilder().setId(obs.getId())
+                    .setType(obs.getType()).setTimestamp(timestamp).build();
             responseBuilder.addObservation(observation);
         }
 
@@ -134,7 +138,8 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
         } else if (type.equals("car")) {
             observations = siloServer.trackMatchCar(id);
         } else {
-            responseObserver.onError(INVALID_ARGUMENT.withDescription("Type is not a valid observation!").asRuntimeException());
+            responseObserver
+                    .onError(INVALID_ARGUMENT.withDescription("Type is not a valid observation!").asRuntimeException());
             return;
         }
 
@@ -142,8 +147,8 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
 
         for (Observation obs : observations) {
             Timestamp timestamp = Timestamp.newBuilder().setSeconds(obs.getInstant().getEpochSecond()).build();
-            final ObservationMessage observation = ObservationMessage.newBuilder()
-                    .setId(obs.getId()).setType(obs.getType()).setTimestamp(timestamp).build();
+            final ObservationMessage observation = ObservationMessage.newBuilder().setId(obs.getId())
+                    .setType(obs.getType()).setTimestamp(timestamp).build();
             responseBuilder.addObservation(observation);
         }
 
@@ -159,21 +164,36 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
         if (name == null) // Check name exists
             responseObserver.onError(INVALID_ARGUMENT.withDescription("Name cannot be null!").asRuntimeException());
         if (name.length() > 15 || name.length() < 3) // Check name size
-            responseObserver.onError(INVALID_ARGUMENT.withDescription("Name cannot be null!").asRuntimeException());
-        else if (request.getCoords() == null) // Check coords exist
-            responseObserver
-                    .onError(INVALID_ARGUMENT.withDescription("Coordinates cannot be null!").asRuntimeException());
+            responseObserver.onError(INVALID_ARGUMENT.withDescription("Name length is illegal!").asRuntimeException());
         else {
             try {
-                Camera cam = new Camera(name, request.getCoords().getLongitude(), request.getCoords().getLatitude());
+                Camera cam = new Camera(name, request.getLongitude(), request.getLatitude());
                 siloServer.registerCamera(cam);
-            } catch (SiloException e) {                
-                responseObserver.onError(
-                        ALREADY_EXISTS.withDescription("Camera with taht id already exists!").asRuntimeException());
+            } catch (SiloException e) {
+                responseObserver.onError(ALREADY_EXISTS.withDescription("Camera already exists!").asRuntimeException());
             }
 
             final CameraRegistrationResponse response = CameraRegistrationResponse.newBuilder()
                     .setResponse(ResponseMessage.SUCCESS).build();
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        }
+    }
+
+    @Override
+    public void camInfo(final CameraInfoRequest request, final StreamObserver<CameraInfoResponse> responseObserver) {
+        String name = request.getName();
+        Camera cam;
+        if (name == null) // Check name exists
+            responseObserver.onError(INVALID_ARGUMENT.withDescription("Name cannot be null!").asRuntimeException());
+        else if ((cam = siloServer.camInfo(name)) == null) // Check name exists
+            responseObserver.onError(INVALID_ARGUMENT.withDescription("No such camera!").asRuntimeException());
+        else {
+            String latitude = Double.toString(cam.getLatitude());
+            String longitude = Double.toString(cam.getLongitude());
+            final CameraInfoResponse response = CameraInfoResponse.newBuilder() //
+                    .setLatitude(latitude).setLongitude(longitude).build();
+
             responseObserver.onNext(response);
             responseObserver.onCompleted();
         }

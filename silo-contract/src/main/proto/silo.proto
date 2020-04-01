@@ -56,18 +56,23 @@ message SearchRequest {
     string id = 2;
 }
 
-message Coordinates {
-   double latitude = 1; // assure precision to 6 decimal cases (float barely reaches 5 at 128-256 range)
-   double longitude = 2;
- }
-
 message CameraRegistrationRequest {    
-        string name = 1;
-        Coordinates coords = 2;
+    string name = 1;
+    double latitude = 2; // assure precision to 6 decimal cases (float barely reaches 5 at 128-256 range)
+    double longitude = 3;
 }
 
 message CameraRegistrationResponse {    
     ResponseMessage response = 1;
+}
+
+message CameraInfoRequest {
+    string name = 1;    
+}
+
+message CameraInfoResponse {
+    string latitude = 1;
+    string longitude = 2;
 }
 
 // service
@@ -77,6 +82,7 @@ service Sauron {
     rpc ctrlClear(ClearRequest) returns (ClearResponse);
     rpc track(SearchRequest) returns (ObservationMessage);
     rpc camJoin(CameraRegistrationRequest) returns (CameraRegistrationResponse);
+    rpc camInfo(CameraInfoRequest) returns (CameraInfoResponse);
     rpc trace(SearchRequest) returns (SearchResponse);
     rpc trackMatch(SearchRequest) returns (SearchResponse);
 }
