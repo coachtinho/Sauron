@@ -10,8 +10,12 @@ import pt.tecnico.sauron.silo.domain.SiloException;
 import pt.tecnico.sauron.silo.domain.SiloServer;
 import pt.tecnico.sauron.silo.grpc.Silo;
 import pt.tecnico.sauron.silo.grpc.Silo.*;
+import pt.tecnico.sauron.silo.grpc.Silo.ReportRequest.ReportItem;
+import pt.tecnico.sauron.silo.grpc.Silo.ReportResponse.FailureItem;
 import pt.tecnico.sauron.silo.grpc.SauronGrpc;
 import com.google.protobuf.Timestamp;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class SiloServerImpl extends SauronGrpc.SauronImplBase {
@@ -228,6 +232,39 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
 
             responseObserver.onNext(response);
             responseObserver.onCompleted();
+        }
+    }
+
+    @Override
+    public void report(final ReportRequest request, final StreamObserver<ReportResponse> responseObserver) {
+        String cameraName = request.getCameraName();
+        if (siloServer.hasCamera(cameraName)) {
+            responseObserver.onError(INVALID_ARGUMENT.withDescription("No such camera").asRuntimeException());
+        } 
+        else {
+            List<ReportItem> items = request.getReportsList();
+            ReportResponse.Builder responseBuilder = ReportResponse.newBuilder();
+            for (ReportItem item : items) {
+                String type = item.getType();
+                String id = item.getId();
+                if (!siloServer.isValidType(type)) {
+                    responseBuilder.addFailures(FailureItem.newBuilder().setType(type).setId(id).setMessage("Invalid type").build());
+                }
+                else if (!siloServer.isValidId(type, id)) {
+                    responseBuilder.addFailures(FailureItem.newBuilder().setType(type).setId(id).setMessage("Invalid id for specified type").build());
+                }
+                else {
+                    siloServer.reportObservation(cameraName, item.getType(), item.getId());
+                }
+            }
+            ReportResponse response = responseBuilder.build();
+            if (response.getFailuresList().isEmpty()) {
+                responseObserver.onError(INVALID_ARGUMENT.withDescription("One or more invalid observations").asRuntimeException());
+            }
+            else {
+                responseObserver.onNext(response);
+                responseObserver.onCompleted();
+            }
         }
     }
 

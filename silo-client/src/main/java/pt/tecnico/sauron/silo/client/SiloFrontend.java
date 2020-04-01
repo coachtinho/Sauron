@@ -55,6 +55,10 @@ public class SiloFrontend {
         return new double[] { longitude, latitude };
     }
 
+    public ReportResponse report(ReportRequest request) {
+        return stub.report(request);
+    }
+
     public TrackResponse track(TrackRequest request) {
         return stub.track(request);
     }

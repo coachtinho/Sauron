@@ -35,6 +35,12 @@ message ReportRequest {
 }
 
 message ReportResponse {
+    message FailureItem {
+        string type = 1;
+        string id = 2;
+        string message = 3;
+    }
+    repeated FailureItem failures = 1;
 }
 
 message TrackRequest {
@@ -97,4 +103,5 @@ service Sauron {
     rpc track(TrackRequest) returns (TrackResponse);
     rpc trace(TraceRequest) returns (TraceResponse);
     rpc trackMatch(TrackMatchRequest) returns (TrackMatchResponse);
+    rpc report(ReportRequest) returns (ReportResponse);
 }

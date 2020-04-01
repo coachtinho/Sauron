@@ -1,8 +1,8 @@
 package pt.tecnico.sauron.silo.domain;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.lang.String;
 import java.util.Collections;
 import java.util.HashMap;
@@ -10,20 +10,20 @@ import java.util.Map;
 
 public class SiloServer {
     private Map<String, Camera> _cameras;
-    private Map<String, ArrayList<Observation>> _cars;
-    private Map<String, ArrayList<Observation>> _persons;
+    private Map<String, LinkedList<Observation>> _cars;
+    private Map<String, LinkedList<Observation>> _people;
 
     public SiloServer() {
         _cameras = new HashMap<>();
         _cars = Collections.synchronizedMap(new LinkedHashMap<>());
-        _persons = Collections.synchronizedMap(new LinkedHashMap<>());
+        _people = Collections.synchronizedMap(new LinkedHashMap<>());
     }
 
     // Track command
     public Observation trackPerson(String id) {
         if (!Person.isValidId(id))
             throw new SiloException(ErrorMessage.INVALID_PERSON_ID);
-        return track(_persons, id);
+        return track(_people, id);
     }
 
     public Observation trackCar(String id) {
@@ -34,9 +34,9 @@ public class SiloServer {
 
     // Having a generic method for command allows for adding more types of
     // observations in the future
-    private Observation track(Map<String, ArrayList<Observation>> observations, String id) {
+    private Observation track(Map<String, LinkedList<Observation>> observations, String id) {
         if (observations.containsKey(id)) {
-            ArrayList<Observation> list = observations.get(id);
+            LinkedList<Observation> list = observations.get(id);
 
             // sorting is handled in insertion so the first element is always the most
             // recent
@@ -50,7 +50,7 @@ public class SiloServer {
     public List<Observation> tracePerson(String id) {
         if (!Person.isValidId(id))
             throw new SiloException(ErrorMessage.INVALID_PERSON_ID);
-        return _persons.get(id);
+        return _people.get(id);
     }
 
     public List<Observation> traceCar(String id) {
@@ -63,7 +63,7 @@ public class SiloServer {
     public List<Observation> trackMatchPerson(String id) {
         if (!Person.isValidId(id))
             throw new SiloException(ErrorMessage.INVALID_PERSON_ID);
-        return trackMatch(_persons, id);
+        return trackMatch(_people, id);
     }
 
     public List<Observation> trackMatchCar(String id) {
@@ -74,8 +74,8 @@ public class SiloServer {
 
     // Having a generic method for command allows for adding more types of
     // observations in the future
-    private List<Observation> trackMatch(Map<String, ArrayList<Observation>> observations, String expr) {
-        List<Observation> list = new ArrayList<>();
+    private List<Observation> trackMatch(Map<String, LinkedList<Observation>> observations, String expr) {
+        List<Observation> list = new LinkedList<>();
 
         if (!expr.contains("*")) {
             for (String id : observations.keySet()) {
@@ -108,6 +108,38 @@ public class SiloServer {
         return true;
     }
 
+    public void reportObservation(String cameraName, String type, String id) {
+        Camera camera = this._cameras.get(cameraName);
+        switch (type) {
+            case "person":
+                Person person = new Person(id, camera);
+                if (!this._people.containsKey(id)) {
+                    // Just add the observation
+                    this._people.get(id).add(person);
+                }
+                else {
+                    //Create new entry in map
+                    LinkedList<Observation> observations = new LinkedList<Observation>();
+                    observations.add(person);
+                    this._people.put(id, observations);
+                }
+            case "car":
+                Car car = new Car(id, camera);
+                if (!this._cars.containsKey(id)) {
+                    // Just add the observation
+                    this._cars.get(id).add(car);
+                }
+                else {
+                    //Create new entry in map
+                    LinkedList<Observation> observations = new LinkedList<Observation>();
+                    observations.add(car);
+                    this._cars.put(id, observations);
+                }
+            default:
+                break;
+        }
+    }
+
     public Camera camInfo(String name) {
         return _cameras.get(name);
     }
@@ -115,7 +147,50 @@ public class SiloServer {
     public void clear() {
         _cameras = Collections.synchronizedMap(new HashMap<>());
         _cars = Collections.synchronizedMap(new LinkedHashMap<>());
-        _persons = Collections.synchronizedMap(new LinkedHashMap<>());
+        _people = Collections.synchronizedMap(new LinkedHashMap<>());
+    }
+
+    public Map<String,Camera> getCameras() {
+        return this._cameras;
+    }
+
+    public void setCameras(Map<String,Camera> _cameras) {
+        this._cameras = _cameras;
+    }
+
+    public Map<String,LinkedList<Observation>> getCars() {
+        return this._cars;
+    }
+
+    public void setCars(Map<String,LinkedList<Observation>> _cars) {
+        this._cars = _cars;
+    }
+
+    public Map<String,LinkedList<Observation>> getPeople() {
+        return this._people;
+    }
+
+    public void setPeople(Map<String,LinkedList<Observation>> _people) {
+        this._people = _people;
+    }
+
+    public boolean hasCamera(String name) {
+        return this._cameras.containsKey(name);
+    }
+
+    public boolean isValidId(String type, String id) {
+        switch (type) {
+            case "person":
+                return Person.isValidId(id);
+            case "car":
+                return Car.isValidId(id);
+            default:
+                return false;
+        }
+    }
+
+    public boolean isValidType(String type) {
+        return type.equals("person") || type.equals("car");
     }
 
 }

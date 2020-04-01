@@ -20,7 +20,10 @@ public class Eye {
         System.out.println("Executing trail");
     }
 
-    
+    public void ping() {
+        
+    }
+
     public void clear() {        
     }
 
