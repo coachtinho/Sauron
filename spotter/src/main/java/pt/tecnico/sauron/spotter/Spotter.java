@@ -4,8 +4,14 @@ import pt.tecnico.sauron.silo.client.SiloFrontend;
 import pt.tecnico.sauron.silo.grpc.Silo.ClearRequest;
 import pt.tecnico.sauron.silo.grpc.Silo.PingRequest;
 import pt.tecnico.sauron.silo.grpc.Silo.TraceRequest;
+import pt.tecnico.sauron.silo.grpc.Silo.TraceResponse;
 import pt.tecnico.sauron.silo.grpc.Silo.TrackMatchRequest;
+import pt.tecnico.sauron.silo.grpc.Silo.TrackMatchResponse;
 import pt.tecnico.sauron.silo.grpc.Silo.TrackRequest;
+import pt.tecnico.sauron.silo.grpc.Silo.TrackResponse;
+
+import java.util.List;
+
 import io.grpc.StatusRuntimeException;
 import io.grpc.Status.Code;
 
@@ -21,10 +27,12 @@ public class Spotter {
         try {
             if (id.contains("*")) {
                 TrackMatchRequest request = TrackMatchRequest.newBuilder().setType(type).setId(id).build();
-                // frontend.trackMatch(request);
+                List<TrackResponse> observations = frontend.trackMatch(request).getObservationList();
+                observations.forEach((observation) -> printObservation(observation));
             } else {
                 TrackRequest request = TrackRequest.newBuilder().setType(type).setId(id).build();
-                // frontend.track(request);
+                TrackResponse response = frontend.track(request);
+                printObservation(response);
             }
         } catch (StatusRuntimeException exception) {
             handleException(exception);
@@ -34,10 +42,22 @@ public class Spotter {
     public void trail(String type, String id) {
         try {
             TraceRequest request = TraceRequest.newBuilder().setType(type).setId(id).build();
-            // frontend.trace(request);
+            List<TrackResponse> observations = frontend.trace(request).getObservationList();
+            observations.forEach((observation) -> printObservation(observation));
         } catch (StatusRuntimeException exception) {
             handleException(exception);
         }
+    }
+
+    public void printObservation(TrackResponse observation) {
+        System.out.printf("%s,%s,%t,%s,%f,%f%n", 
+            observation.getType(),
+            observation.getId(),
+            observation.getTimestamp(),
+            observation.getName(),
+            observation.getLatitude(),
+            observation.getLongitude()
+        );
     }
 
     public void ping() {
