@@ -4,15 +4,7 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
 import pt.tecnico.sauron.silo.grpc.SauronGrpc;
-import pt.tecnico.sauron.silo.grpc.Silo.ClearRequest;
-import pt.tecnico.sauron.silo.grpc.Silo.ClearResponse;
-import pt.tecnico.sauron.silo.grpc.Silo.CameraInfoRequest;
-import pt.tecnico.sauron.silo.grpc.Silo.CameraInfoResponse;
-import pt.tecnico.sauron.silo.grpc.Silo.CameraRegistrationRequest;
-import pt.tecnico.sauron.silo.grpc.Silo.CameraRegistrationResponse;
-import pt.tecnico.sauron.silo.grpc.Silo.PingRequest;
-import pt.tecnico.sauron.silo.grpc.Silo.PingResponse;
-import pt.tecnico.sauron.silo.grpc.Silo.ResponseMessage;
+import pt.tecnico.sauron.silo.grpc.Silo.*;
 
 import java.awt.geom.Point2D;
 
@@ -43,11 +35,9 @@ public class SiloFrontend {
                 .setLatitude(latitude).build();
         try {
             CameraRegistrationResponse response = stub.camJoin(request);
-            if (response.getResponse() == ResponseMessage.SUCCESS)
-                System.out.println("Camera sucessfully registered!");
-            else
-                System.out.println("Camera wasn't registered!");
+            System.out.println("Camera sucessfully registered!");
         } catch (StatusRuntimeException e) {
+            System.out.println("Camera wasn't registered!");
             System.out.println(e.getMessage());
         }
     }
@@ -65,6 +55,21 @@ public class SiloFrontend {
             System.out.println(e.getMessage());
         }
         return new double[] { longitude, latitude };
+    }
+
+    // TODO:implement
+    public TrackResponse track(TrackRequest request) {
+        return TrackResponse.newBuilder().build();
+    }
+
+    // TODO:implement
+    public TrackMatchResponse trackMatch(TrackMatchRequest request) {
+        return TrackMatchResponse.newBuilder().build();
+    }
+
+    // TODO:implement
+    public TraceResponse trace(TraceRequest request) {
+        return TraceResponse.newBuilder().build();
     }
 
     public void close() {

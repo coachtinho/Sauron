@@ -5,13 +5,6 @@ package pt.tecnico.sauron.silo.grpc;
 
 import "google/protobuf/timestamp.proto";
 
-enum ResponseMessage {
-    SUCCESS = 0;
-    INIT_FAIL = 1;
-    CLEAR_FAIL = 2;
-    
-}
-
 message PingRequest {
     string message = 1;
 }
@@ -20,11 +13,10 @@ message PingResponse {
     string message = 1;
 }
 
-message InitRequest { // TODO: fill later
+message InitRequest {
 }
 
 message InitResponse {
-    ResponseMessage response = 1;
 }
 
 message ClearRequest {
@@ -33,27 +25,48 @@ message ClearRequest {
 message ClearResponse {
 }
 
-message ReportRequest {
-
+message ReportRequest {  
+    message ReportItem {
+        string type = 1;
+        string id = 2;
+    }
+    string cameraName = 1;
+    repeated ReportItem reports = 2;
 }
 
 message ReportResponse {
-    ResponseMessage response = 1;
 }
 
-message ObservationMessage {
+message TrackRequest {
+    string type = 1;
+    string id = 2;
+}
+
+message TrackResponse {
     string type = 1;
     string id = 2;
     google.protobuf.Timestamp timestamp = 3;
+    string name = 4;
+    double latitude = 5;
+    double longitude = 6;
 }
 
-message SearchResponse {
-  repeated ObservationMessage observation = 1;
-}
-
-message SearchRequest {
+message TrackMatchRequest {
     string type = 1;
     string id = 2;
+}
+
+message TrackMatchResponse {
+    repeated TrackResponse observation = 1;
+}
+
+message TraceRequest {
+    string type = 1;
+    string id = 2;
+}
+
+message TraceResponse {
+    repeated TrackResponse observation = 1;
 }
 
 message CameraRegistrationRequest {    
@@ -62,8 +75,7 @@ message CameraRegistrationRequest {
     double longitude = 3;
 }
 
-message CameraRegistrationResponse {    
-    ResponseMessage response = 1;
+message CameraRegistrationResponse {
 }
 
 message CameraInfoRequest {
@@ -80,9 +92,9 @@ message CameraInfoResponse {
 service Sauron {
     rpc ctrlPing(PingRequest) returns (PingResponse);
     rpc ctrlClear(ClearRequest) returns (ClearResponse);
-    rpc track(SearchRequest) returns (ObservationMessage);
     rpc camJoin(CameraRegistrationRequest) returns (CameraRegistrationResponse);
     rpc camInfo(CameraInfoRequest) returns (CameraInfoResponse);
-    rpc trace(SearchRequest) returns (SearchResponse);
-    rpc trackMatch(SearchRequest) returns (SearchResponse);
+    rpc track(TrackRequest) returns (TrackResponse);
+    rpc trace(TraceRequest) returns (TraceResponse);
+    rpc trackMatch(TrackMatchRequest) returns (TrackMatchResponse);
 }

@@ -8,18 +8,8 @@ import io.grpc.stub.StreamObserver;
 import pt.tecnico.sauron.silo.domain.Camera;
 import pt.tecnico.sauron.silo.domain.SiloException;
 import pt.tecnico.sauron.silo.domain.SiloServer;
-import pt.tecnico.sauron.silo.grpc.Silo.SearchResponse;
-import pt.tecnico.sauron.silo.grpc.Silo.CameraInfoRequest;
-import pt.tecnico.sauron.silo.grpc.Silo.CameraInfoResponse;
-import pt.tecnico.sauron.silo.grpc.Silo.CameraRegistrationRequest;
-import pt.tecnico.sauron.silo.grpc.Silo.CameraRegistrationResponse;
-import pt.tecnico.sauron.silo.grpc.Silo.ClearRequest;
-import pt.tecnico.sauron.silo.grpc.Silo.ClearResponse;
-import pt.tecnico.sauron.silo.grpc.Silo.PingRequest;
-import pt.tecnico.sauron.silo.grpc.Silo.PingResponse;
-import pt.tecnico.sauron.silo.grpc.Silo.SearchRequest;
-import pt.tecnico.sauron.silo.grpc.Silo.ObservationMessage;
-import pt.tecnico.sauron.silo.grpc.Silo.ResponseMessage;
+import pt.tecnico.sauron.silo.grpc.Silo;
+import pt.tecnico.sauron.silo.grpc.Silo.*;
 import pt.tecnico.sauron.silo.grpc.SauronGrpc;
 import com.google.protobuf.Timestamp;
 import java.util.List;
@@ -44,14 +34,14 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
     }
 
     public void ctrlClear(final ClearRequest request, final StreamObserver<ClearResponse> responseObserver) {
-            siloServer.clear();
-            final ClearResponse response = ClearResponse.newBuilder().build();
-            responseObserver.onNext(response);
-            responseObserver.onCompleted();
+        siloServer.clear();
+        final ClearResponse response = ClearResponse.newBuilder().build();
+        responseObserver.onNext(response);
+        responseObserver.onCompleted();
     }
 
     @Override
-    public void track(final SearchRequest request, final StreamObserver<ObservationMessage> responseObserver) {
+    public void track(final TrackRequest request, final StreamObserver<TrackResponse> responseObserver) {
         final String type = request.getType();
         final String id = request.getId();
         Observation obs;
@@ -70,28 +60,34 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
             } else if (type.equals("car")) {
                 obs = siloServer.trackCar(id);
             } else {
-                responseObserver.onError(INVALID_ARGUMENT.withDescription("Type is not a valid observation!").asRuntimeException());
+                responseObserver.onError(
+                        INVALID_ARGUMENT.withDescription("Type is not a valid observation!").asRuntimeException());
                 return;
             }
-        } catch(SiloException e) {
+        } catch (SiloException e) {
             responseObserver.onError(INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
             return;
         }
 
-        ObservationMessage.Builder responseBuilder = ObservationMessage.newBuilder();
+        TrackResponse.Builder responseBuilder = TrackResponse.newBuilder();
 
         if (obs != null) {
             Timestamp timestamp = Timestamp.newBuilder().setSeconds(obs.getInstant().getEpochSecond()).build();
-            responseBuilder.setId(obs.getId()).setType(obs.getType()).setTimestamp(timestamp);
+            responseBuilder.setId(obs.getId()) //
+                    .setType(obs.getType()) //
+                    .setTimestamp(timestamp) //
+                    .setName(obs.getCamName()) //
+                    .setLatitude(obs.getCamLat()) //
+                    .setLongitude(obs.getCamLong());
         }
 
-        final ObservationMessage response = responseBuilder.build();
+        final TrackResponse response = responseBuilder.build();
         responseObserver.onNext(response);
         responseObserver.onCompleted();
     }
 
     @Override
-    public void trace(final SearchRequest request, final StreamObserver<SearchResponse> responseObserver) {
+    public void trace(final TraceRequest request, final StreamObserver<TraceResponse> responseObserver) {
         final String type = request.getType();
         final String id = request.getId();
         List<Observation> observations;
@@ -110,33 +106,40 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
             } else if (type.equals("car")) {
                 observations = siloServer.traceCar(id);
             } else {
-                responseObserver.onError(INVALID_ARGUMENT.withDescription("Type is not a valid observation!").asRuntimeException());
+                responseObserver.onError(
+                        INVALID_ARGUMENT.withDescription("Type is not a valid observation!").asRuntimeException());
                 return;
             }
-        } catch(SiloException e) {
+        } catch (SiloException e) {
             responseObserver.onError(INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
             return;
         }
 
-        SearchResponse.Builder responseBuilder = SearchResponse.newBuilder();
+        TraceResponse.Builder responseBuilder = TraceResponse.newBuilder();
 
         if (observations != null && !observations.isEmpty()) {
 
             for (Observation obs : observations) {
                 Timestamp timestamp = Timestamp.newBuilder().setSeconds(obs.getInstant().getEpochSecond()).build();
-                final ObservationMessage observation = ObservationMessage.newBuilder()
-                    .setId(obs.getId()).setType(obs.getType()).setTimestamp(timestamp).build();
+                final TrackResponse observation = TrackResponse.newBuilder() //
+                        .setId(obs.getId()) //
+                        .setType(obs.getType())//
+                        .setTimestamp(timestamp) //
+                        .setName(obs.getCamName()) //
+                        .setLatitude(obs.getCamLat()) //
+                        .setLongitude(obs.getCamLong()) //
+                        .build();
                 responseBuilder.addObservation(observation);
             }
         }
 
-        final SearchResponse response = responseBuilder.build();
+        final TraceResponse response = responseBuilder.build();
         responseObserver.onNext(response);
         responseObserver.onCompleted();
     }
 
     @Override
-    public void trackMatch(final SearchRequest request, final StreamObserver<SearchResponse> responseObserver) {
+    public void trackMatch(final TrackMatchRequest request, final StreamObserver<TrackMatchResponse> responseObserver) {
         final String type = request.getType();
         final String id = request.getId();
         List<Observation> observations;
@@ -155,27 +158,34 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
             } else if (type.equals("car")) {
                 observations = siloServer.trackMatchCar(id);
             } else {
-                responseObserver.onError(INVALID_ARGUMENT.withDescription("Type is not a valid observation!").asRuntimeException());
+                responseObserver.onError(
+                        INVALID_ARGUMENT.withDescription("Type is not a valid observation!").asRuntimeException());
                 return;
             }
-        } catch(SiloException e) {
+        } catch (SiloException e) {
             responseObserver.onError(INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
             return;
         }
 
-        SearchResponse.Builder responseBuilder = SearchResponse.newBuilder();
+        TrackMatchResponse.Builder responseBuilder = TrackMatchResponse.newBuilder();
 
         if (observations != null && !observations.isEmpty()) {
 
             for (Observation obs : observations) {
                 Timestamp timestamp = Timestamp.newBuilder().setSeconds(obs.getInstant().getEpochSecond()).build();
-                final ObservationMessage observation = ObservationMessage.newBuilder()
-                        .setId(obs.getId()).setType(obs.getType()).setTimestamp(timestamp).build();
+                final TrackResponse observation = TrackResponse.newBuilder() //
+                        .setId(obs.getId()) //
+                        .setType(obs.getType()) //
+                        .setTimestamp(timestamp) //
+                        .setName(obs.getCamName()) //
+                        .setLatitude(obs.getCamLat()) //
+                        .setLongitude(obs.getCamLong()) //
+                        .build();
                 responseBuilder.addObservation(observation);
             }
         }
 
-        final SearchResponse response = responseBuilder.build();
+        final TrackMatchResponse response = responseBuilder.build();
         responseObserver.onNext(response);
         responseObserver.onCompleted();
     }
@@ -196,8 +206,7 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
                 responseObserver.onError(ALREADY_EXISTS.withDescription("Camera already exists!").asRuntimeException());
             }
 
-            final CameraRegistrationResponse response = CameraRegistrationResponse.newBuilder()
-                    .setResponse(ResponseMessage.SUCCESS).build();
+            final CameraRegistrationResponse response = CameraRegistrationResponse.newBuilder().build();
             responseObserver.onNext(response);
             responseObserver.onCompleted();
         }

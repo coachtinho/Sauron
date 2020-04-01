@@ -34,22 +34,30 @@ public class SpotterApp {
 				switch (keyword) {
 					case "spot":
 						arguments = scanner.nextLine().split(" ");
-						spotter.spot(arguments[0], arguments[1]);
+						spotter.spot(arguments[1], arguments[2]);
 						break;
 					case "trail":
 						arguments = scanner.nextLine().split(" ");
-						spotter.spot(arguments[0], arguments[1]);
+						spotter.spot(arguments[1], arguments[2]);
 						break;
 					case "ping":
+						//ignores rest of the line
+						scanner.nextLine();
 						spotter.ping();
 						break;
 					case "clear":
+						//ignores rest of the line
+						scanner.nextLine();
 						spotter.clear();
 						break;
 					case "init":
+						//ignores rest of the line
+						scanner.nextLine();
 						spotter.init();
 						break;
 					case "help":
+						//ignores rest of the line
+						scanner.nextLine();
 						spotter.help();
 						break;
 					case "exit":

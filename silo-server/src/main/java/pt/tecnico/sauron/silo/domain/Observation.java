@@ -10,17 +10,17 @@ import java.time.format.DateTimeFormatter;
 public abstract class Observation {
 
     LocalDateTime _timestamp;
-    DateTimeFormatter dtf;
+    DateTimeFormatter _dtf;
     Camera _cam;
 
     public Observation(Camera camera) {
         _cam = camera;
         _timestamp = LocalDateTime.now();
-        dtf = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+        _dtf = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
     }
 
     public String getDate() {
-        return dtf.format(_timestamp);
+        return _dtf.format(_timestamp);
     }
 
     public Instant getInstant() {
@@ -30,6 +30,18 @@ public abstract class Observation {
     public abstract String getId();
 
     public abstract String getType();
+
+    public String getCamName() {
+        return _cam.getName();
+    }
+
+    public double getCamLat() {
+        return _cam.getLatitude();
+    }
+
+    public double getCamLong() {
+        return _cam.getLongitude();
+    }
 
     @Override
     public synchronized String toString() {

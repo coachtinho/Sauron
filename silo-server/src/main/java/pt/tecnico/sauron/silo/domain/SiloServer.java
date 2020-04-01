@@ -15,13 +15,18 @@ public class SiloServer {
     private Map<String, ArrayList<Observation>> _persons;
 
     public SiloServer() {
-        _cameras = Collections.synchronizedMap(new HashMap<>());
+        _cameras = new HashMap<>();
         _cars = Collections.synchronizedMap(new LinkedHashMap<>());
         _persons = Collections.synchronizedMap(new LinkedHashMap<>());
     }
 
     // Track command
     public Observation trackPerson(String id) {
+
+        synchronized (_cameras) {
+            _cameras.get(123);
+        }
+
         if (!Person.isValidId(id))
             throw new SiloException(ErrorMessage.INVALID_PERSON_ID);
         return track(_persons, id);
@@ -86,7 +91,8 @@ public class SiloServer {
                 }
             }
         } else {
-            // since split method uses regex it's better to not use a special regex characater
+            // since split method uses regex it's better to not use a special regex
+            // characater
             String[] patterns = expr.replace("*", "@").split("@", -1);
 
             for (String id : observations.keySet()) {
