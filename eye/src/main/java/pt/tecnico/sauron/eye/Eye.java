@@ -7,14 +7,17 @@ import io.grpc.Status.Code;
 public class Eye {
 
     SiloFrontend frontend;
+    
 
     public Eye(String host, int port) {
         frontend = new SiloFrontend(host, port);
     }
 
-    public void spot(String type, String id) {
+    public void addToReport(String type, String id) {
 
     }
+
+    
 
     public void trail(String type, String id) {
         System.out.println("Executing trail");

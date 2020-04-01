@@ -41,9 +41,6 @@ public class EyeApp {
 						arguments = scanner.nextLine().split(" ");
 						spotter.spot(arguments[0], arguments[1]);
 						break;
-					case "ping":
-						spotter.ping();
-						break;
 					case "clear":
 						spotter.clear();
 						break;
