@@ -62,18 +62,28 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
             return;
         }
 
-        if (type.equals("person")) {
-            obs = siloServer.trackPerson(id);
-        } else if (type.equals("car")) {
-            obs = siloServer.trackCar(id);
-        } else {
-            responseObserver.onError(INVALID_ARGUMENT.withDescription("Type is not a valid observation!").asRuntimeException());
+        try {
+            if (type.equals("person")) {
+                obs = siloServer.trackPerson(id);
+            } else if (type.equals("car")) {
+                obs = siloServer.trackCar(id);
+            } else {
+                responseObserver.onError(INVALID_ARGUMENT.withDescription("Type is not a valid observation!").asRuntimeException());
+                return;
+            }
+        } catch(SiloException e) {
+            responseObserver.onError(INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
             return;
         }
 
-        Timestamp timestamp = Timestamp.newBuilder().setSeconds(obs.getInstant().getEpochSecond()).build();
-        final ObservationMessage response = ObservationMessage.newBuilder()
-            .setId(obs.getId()).setType(obs.getType()).setTimestamp(timestamp).build();
+        ObservationMessage.Builder responseBuilder = ObservationMessage.newBuilder();
+
+        if (obs != null) {
+            Timestamp timestamp = Timestamp.newBuilder().setSeconds(obs.getInstant().getEpochSecond()).build();
+            responseBuilder.setId(obs.getId()).setType(obs.getType()).setTimestamp(timestamp);
+        }
+
+        final ObservationMessage response = responseBuilder.build();
         responseObserver.onNext(response);
         responseObserver.onCompleted();
     }
@@ -92,22 +102,30 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
             return;
         }
 
-        if (type.equals("person")) {
-            observations = siloServer.tracePerson(id);
-        } else if (type.equals("car")) {
-            observations = siloServer.traceCar(id);
-        } else {
-            responseObserver.onError(INVALID_ARGUMENT.withDescription("Type is not a valid observation!").asRuntimeException());
+        try {
+            if (type.equals("person")) {
+                observations = siloServer.tracePerson(id);
+            } else if (type.equals("car")) {
+                observations = siloServer.traceCar(id);
+            } else {
+                responseObserver.onError(INVALID_ARGUMENT.withDescription("Type is not a valid observation!").asRuntimeException());
+                return;
+            }
+        } catch(SiloException e) {
+            responseObserver.onError(INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
             return;
         }
 
         SearchResponse.Builder responseBuilder = SearchResponse.newBuilder();
 
-        for (Observation obs : observations) {
-            Timestamp timestamp = Timestamp.newBuilder().setSeconds(obs.getInstant().getEpochSecond()).build();
-            final ObservationMessage observation = ObservationMessage.newBuilder()
-                .setId(obs.getId()).setType(obs.getType()).setTimestamp(timestamp).build();
-            responseBuilder.addObservation(observation);
+        if (observations != null && !observations.isEmpty()) {
+
+            for (Observation obs : observations) {
+                Timestamp timestamp = Timestamp.newBuilder().setSeconds(obs.getInstant().getEpochSecond()).build();
+                final ObservationMessage observation = ObservationMessage.newBuilder()
+                    .setId(obs.getId()).setType(obs.getType()).setTimestamp(timestamp).build();
+                responseBuilder.addObservation(observation);
+            }
         }
 
         final SearchResponse response = responseBuilder.build();
@@ -129,22 +147,30 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
             return;
         }
 
-        if (type.equals("person")) {
-            observations = siloServer.trackMatchPerson(id);
-        } else if (type.equals("car")) {
-            observations = siloServer.trackMatchCar(id);
-        } else {
-            responseObserver.onError(INVALID_ARGUMENT.withDescription("Type is not a valid observation!").asRuntimeException());
+        try {
+            if (type.equals("person")) {
+                observations = siloServer.trackMatchPerson(id);
+            } else if (type.equals("car")) {
+                observations = siloServer.trackMatchCar(id);
+            } else {
+                responseObserver.onError(INVALID_ARGUMENT.withDescription("Type is not a valid observation!").asRuntimeException());
+                return;
+            }
+        } catch(SiloException e) {
+            responseObserver.onError(INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
             return;
         }
 
         SearchResponse.Builder responseBuilder = SearchResponse.newBuilder();
 
-        for (Observation obs : observations) {
-            Timestamp timestamp = Timestamp.newBuilder().setSeconds(obs.getInstant().getEpochSecond()).build();
-            final ObservationMessage observation = ObservationMessage.newBuilder()
-                    .setId(obs.getId()).setType(obs.getType()).setTimestamp(timestamp).build();
-            responseBuilder.addObservation(observation);
+        if (observations != null && !observations.isEmpty()) {
+
+            for (Observation obs : observations) {
+                Timestamp timestamp = Timestamp.newBuilder().setSeconds(obs.getInstant().getEpochSecond()).build();
+                final ObservationMessage observation = ObservationMessage.newBuilder()
+                        .setId(obs.getId()).setType(obs.getType()).setTimestamp(timestamp).build();
+                responseBuilder.addObservation(observation);
+            }
         }
 
         final SearchResponse response = responseBuilder.build();

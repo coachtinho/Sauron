@@ -24,10 +24,14 @@ public class SiloServer {
 
     // Track command
     public Observation trackPerson(String id) {
+        if (!Person.isValidId(id))
+            throw new SiloException(ErrorMessage.INVALID_PERSON_ID);
         return track(_persons, id);
     }
 
     public Observation trackCar(String id) {
+        if (!Car.isValidId(id))
+            throw new SiloException(ErrorMessage.INAVLID_CAR_ID);
         return track(_cars, id);
     }
 
@@ -45,20 +49,28 @@ public class SiloServer {
 
     // Trace command
     public List<Observation> tracePerson(String id) {
+        if (!Person.isValidId(id))
+            throw new SiloException(ErrorMessage.INVALID_PERSON_ID);
         return _persons.get(id);
     }
 
     public List<Observation> traceCar(String id) {
+        if (!Car.isValidId(id))
+            throw new SiloException(ErrorMessage.INAVLID_CAR_ID);
         return _cars.get(id);
     }
 
 
     // Track Match command
     public List<Observation> trackMatchPerson(String id) {
+        if (!Person.isValidId(id))
+            throw new SiloException(ErrorMessage.INVALID_PERSON_ID);
         return trackMatch(_persons, id);
     }
 
     public List<Observation> trackMatchCar(String id) {
+        if (!Car.isValidId(id))
+            throw new SiloException(ErrorMessage.INAVLID_CAR_ID);
         return trackMatch(_cars, id);
     }
 
@@ -74,10 +86,12 @@ public class SiloServer {
                 }
             }
         } else {
-            String[] patterns = expr.split("'*'");// separate prefix and suffix
+            // since split method uses regex it's better to not use a special regex characater
+            String[] patterns = expr.replace("*", "@").split("@", -1);
 
             for (String id : observations.keySet()) {
                 if (id.startsWith(patterns[0]) && id.endsWith(patterns[1])) {
+                    // sorting is handled in insertion so the first element is always most recent
                     list.add(observations.get(id).get(0));
                 }
             }

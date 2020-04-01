@@ -21,6 +21,10 @@ public class Person extends Observation {
         return "person";
     }
 
+    public static boolean isValidId(String id) {
+        return id.matches("[0-9]+");
+    }
+
     @Override
     public synchronized String toString() {
         return "Person," + _id + "," + super.toString();
