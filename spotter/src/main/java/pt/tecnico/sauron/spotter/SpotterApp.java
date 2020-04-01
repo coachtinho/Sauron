@@ -13,7 +13,7 @@ public class SpotterApp {
 		
 		// check arguments
 		if (args.length < 2) {
-			System.out.println("Incorrect ammount of arguments!");
+			System.out.println("Incorrect amount of arguments!");
 			System.out.printf("Usage: java %s host port%n", SpotterApp.class.getName());
 			return;
 		}

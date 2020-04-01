@@ -1,7 +1,12 @@
 package pt.tecnico.sauron.spotter;
 
 import pt.tecnico.sauron.silo.client.SiloFrontend;
+import pt.tecnico.sauron.silo.grpc.Silo.ClearRequest;
 import pt.tecnico.sauron.silo.grpc.Silo.PingRequest;
+import pt.tecnico.sauron.silo.grpc.Silo.SearchRequest;
+
+import io.grpc.StatusRuntimeException;
+import io.grpc.Status.Code;
 
 public class Spotter {
 
@@ -12,7 +17,18 @@ public class Spotter {
     }
 
     public void spot(String type, String id) {
-        System.out.println("Executing spot");
+        // Contains id
+/*         if (id.startsWith("*") || type.endsWith("*")) {
+
+        } */
+        // Perfect match
+/*         else {
+            SearchRequest request = SearchRequest.newBuilder().setType(type).setId(id).build();
+            
+        } */
+
+
+
     }
     
     public void trail(String type, String id) {
@@ -20,21 +36,40 @@ public class Spotter {
     }
 
     public void ping() {
-        PingRequest request = PingRequest.newBuilder().setMessage("Hello server, are you there!").build();
-        System.out.println("Server answered with:" + frontend.ctrlPing(request).getMessage());
+        try {
+            PingRequest request = PingRequest.newBuilder().setMessage("Hello server, are you there!").build();
+            System.out.println("Server answered with:" + frontend.ctrlPing(request).getMessage());
+        }
+        catch (StatusRuntimeException exception) {
+            System.out.println("Caught exception with description: " + exception.getMessage());
+        }
     }
 
     public void clear() {
-        System.out.println("Executing clear");
+        try {
+            ClearRequest request = ClearRequest.newBuilder().build(); 
+            frontend.ctrlClear(request);
+            System.out.println("Server state cleared");
+        }
+        catch (StatusRuntimeException exception) {
+            Code statusCode = exception.getStatus().getCode();
+            switch (statusCode) {
+                case UNAVAILABLE:
+                    System.out.println("Server is currently unavailable");
+                    break;
+                default:
+                    System.out.println("Caught exception with code " + statusCode + "and description: " + exception.getMessage());
+            }
+        }
     }
 
     public void init() {
-        System.out.println("Executing init");
+        System.out.println("To be implemented");
     }
 
     public void help() {
         System.out.println(
-            "Spot: shows information regarding observations of the objects with identifiers that start with id\n" +
+            "Spot: shows information regarding observations of the objects with identifiers that match with id\n" +
             "   Usage: spotter objectType id\n" + 
             "Trail: shows the path taken by the object with id\n" + 
             "   Usage: trail objectType id\n" + 

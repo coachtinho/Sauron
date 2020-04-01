@@ -20,18 +20,17 @@ message PingResponse {
     string message = 1;
 }
 
-message ClearRequest {
-}
-
-message ClearResponse {
-    ResponseMessage response = 1;
-}
-
 message InitRequest { // TODO: fill later
 }
 
 message InitResponse {
     ResponseMessage response = 1;
+}
+
+message ClearRequest {
+}
+
+message ClearResponse {
 }
 
 message ReportRequest {
@@ -75,6 +74,7 @@ message CameraRegistrationResponse {
 
 service Sauron {
     rpc ctrlPing(PingRequest) returns (PingResponse);
+    rpc ctrlClear(ClearRequest) returns (ClearResponse);
     rpc track(SearchRequest) returns (ObservationMessage);
     rpc camJoin(CameraRegistrationRequest) returns (CameraRegistrationResponse);
     rpc trace(SearchRequest) returns (SearchResponse);

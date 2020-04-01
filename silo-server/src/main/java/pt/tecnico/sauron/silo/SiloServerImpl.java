@@ -11,6 +11,8 @@ import pt.tecnico.sauron.silo.domain.SiloServer;
 import pt.tecnico.sauron.silo.grpc.Silo.SearchResponse;
 import pt.tecnico.sauron.silo.grpc.Silo.CameraRegistrationRequest;
 import pt.tecnico.sauron.silo.grpc.Silo.CameraRegistrationResponse;
+import pt.tecnico.sauron.silo.grpc.Silo.ClearRequest;
+import pt.tecnico.sauron.silo.grpc.Silo.ClearResponse;
 import pt.tecnico.sauron.silo.grpc.Silo.PingRequest;
 import pt.tecnico.sauron.silo.grpc.Silo.PingResponse;
 import pt.tecnico.sauron.silo.grpc.Silo.SearchRequest;
@@ -37,6 +39,13 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
             responseObserver.onNext(response);
             responseObserver.onCompleted();
         }
+    }
+
+    public void ctrlClear(final ClearRequest request, final StreamObserver<ClearResponse> responseObserver) {
+            siloServer.clear();
+            final ClearResponse response = ClearResponse.newBuilder().build();
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
     }
 
     @Override

@@ -94,4 +94,10 @@ public class SiloServer {
         return true;
     }
 
+    public void clear() {
+        _cameras = Collections.synchronizedMap(new HashMap<>());
+        _cars = Collections.synchronizedMap(new LinkedHashMap<>());
+        _persons = Collections.synchronizedMap(new LinkedHashMap<>());
+    }
+
 }
