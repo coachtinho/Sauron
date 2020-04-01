@@ -55,19 +55,16 @@ public class SiloFrontend {
         return new double[] { longitude, latitude };
     }
 
-    // TODO:implement
     public TrackResponse track(TrackRequest request) {
-        return TrackResponse.newBuilder().build();
+        return stub.track(request);
     }
 
-    // TODO:implement
     public TrackMatchResponse trackMatch(TrackMatchRequest request) {
-        return TrackMatchResponse.newBuilder().build();
+        return stub.trackMatch(request);
     }
 
-    // TODO:implement
     public TraceResponse trace(TraceRequest request) {
-        return TraceResponse.newBuilder().build();
+        return stub.trace(request);
     }
 
     public void close() {
