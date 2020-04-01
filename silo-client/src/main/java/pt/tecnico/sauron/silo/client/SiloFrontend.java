@@ -6,8 +6,6 @@ import io.grpc.StatusRuntimeException;
 import pt.tecnico.sauron.silo.grpc.SauronGrpc;
 import pt.tecnico.sauron.silo.grpc.Silo.*;
 
-import java.awt.geom.Point2D;
-
 public class SiloFrontend {
 
     final ManagedChannel channel;

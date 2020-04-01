@@ -7,7 +7,6 @@ import java.lang.String;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import pt.tecnico.sauron.silo.domain.ErrorMessage;
 
 public class SiloServer {
     private Map<String, Camera> _cameras;
@@ -22,11 +21,6 @@ public class SiloServer {
 
     // Track command
     public Observation trackPerson(String id) {
-
-        synchronized (_cameras) {
-            _cameras.get(123);
-        }
-
         if (!Person.isValidId(id))
             throw new SiloException(ErrorMessage.INVALID_PERSON_ID);
         return track(_persons, id);

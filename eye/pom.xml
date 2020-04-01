@@ -15,11 +15,17 @@
 
 	<properties>
 		<!-- see parent POM for more properties -->
-
+		<server.host>localhost</server.host>
+		<server.port>8080</server.port>
 		<mainclass>pt.tecnico.sauron.eye.EyeApp</mainclass>
 	</properties>
 
 	<dependencies>
+	<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>silo-client</artifactId>
+			<version>1.0.0-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -60,7 +66,8 @@
 				<configuration>
 					<mainClass>${mainclass}</mainClass>
 					<arguments>
-
+						<argument>${server.host}</argument>
+						<argument>${server.port}</argument>
 					</arguments>
 				</configuration>
 			</plugin>
