@@ -123,6 +123,7 @@ public class SiloServer {
                     observations.add(person);
                     this._people.put(id, observations);
                 }
+                break;
             case "car":
                 Car car = new Car(id, camera);
                 if (this._cars.containsKey(id)) {
@@ -135,6 +136,7 @@ public class SiloServer {
                     observations.add(car);
                     this._cars.put(id, observations);
                 }
+                break;
             default:
                 break;
         }
