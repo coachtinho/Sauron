@@ -113,7 +113,7 @@ public class SiloServer {
         switch (type) {
             case "person":
                 Person person = new Person(id, camera);
-                if (!this._people.containsKey(id)) {
+                if (this._people.containsKey(id)) {
                     // Just add the observation
                     this._people.get(id).add(person);
                 }
@@ -125,7 +125,7 @@ public class SiloServer {
                 }
             case "car":
                 Car car = new Car(id, camera);
-                if (!this._cars.containsKey(id)) {
+                if (this._cars.containsKey(id)) {
                     // Just add the observation
                     this._cars.get(id).add(car);
                 }
