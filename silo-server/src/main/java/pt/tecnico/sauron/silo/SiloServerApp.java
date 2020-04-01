@@ -6,7 +6,6 @@ import io.grpc.ServerBuilder;
 
 import java.io.IOException;
 
-
 public class SiloServerApp {
 
     public static void main(String[] args) throws IOException, InterruptedException {

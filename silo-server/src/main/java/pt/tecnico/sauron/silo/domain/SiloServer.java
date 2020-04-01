@@ -1,6 +1,5 @@
 package pt.tecnico.sauron.silo.domain;
 
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.LinkedHashMap;
@@ -8,8 +7,7 @@ import java.lang.String;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.HashMap;
-import java.util.Collections;
+import pt.tecnico.sauron.silo.domain.ErrorMessage;
 
 public class SiloServer {
     private Map<String, Camera> _cameras;
@@ -35,12 +33,14 @@ public class SiloServer {
         return track(_cars, id);
     }
 
-    // Having a generic method for command allows for adding more types of observations in the future
+    // Having a generic method for command allows for adding more types of
+    // observations in the future
     private Observation track(Map<String, ArrayList<Observation>> observations, String id) {
         if (observations.containsKey(id)) {
             ArrayList<Observation> list = observations.get(id);
 
-            // sorting is handled in insertion so the first element is always the most recent
+            // sorting is handled in insertion so the first element is always the most
+            // recent
             return list != null ? list.get(0) : null;
         }
 
@@ -60,7 +60,6 @@ public class SiloServer {
         return _cars.get(id);
     }
 
-
     // Track Match command
     public List<Observation> trackMatchPerson(String id) {
         if (!Person.isValidId(id))
@@ -74,7 +73,8 @@ public class SiloServer {
         return trackMatch(_cars, id);
     }
 
-    // Having a generic method for command allows for adding more types of observations in the future
+    // Having a generic method for command allows for adding more types of
+    // observations in the future
     private List<Observation> trackMatch(Map<String, ArrayList<Observation>> observations, String expr) {
         List<Observation> list = new ArrayList<>();
 
@@ -103,9 +103,13 @@ public class SiloServer {
     // TODO: Create custom exception
     public boolean registerCamera(Camera camera) {
         if (_cameras.containsKey(camera.getName()))
-            return false;
+            throw new SiloException(ErrorMessage.CAMERA_ALREADY_EXISTS);
         _cameras.put(camera.getName(), camera);
         return true;
+    }
+
+    public Camera camInfo(String name) {
+        return _cameras.get(name);
     }
 
     public void clear() {
