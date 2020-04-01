@@ -248,22 +248,22 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
                 String type = item.getType();
                 String id = item.getId();
                 if (!siloServer.isValidType(type)) {
-                    responseBuilder.addFailures(FailureItem.newBuilder().setType(type).setId(id).setMessage("Invalid type").build());
+                    responseBuilder.addFailures(FailureItem.newBuilder().setType(type).setId(id).setMessage("Invalid type"));
                 }
                 else if (!siloServer.isValidId(type, id)) {
-                    responseBuilder.addFailures(FailureItem.newBuilder().setType(type).setId(id).setMessage("Invalid id for specified type").build());
+                    responseBuilder.addFailures(FailureItem.newBuilder().setType(type).setId(id).setMessage("Invalid id for specified type"));
                 }
                 else {
                     siloServer.reportObservation(cameraName, item.getType(), item.getId());
                 }
             }
             ReportResponse response = responseBuilder.build();
+            responseObserver.onNext(response);
             if (response.getFailuresList().isEmpty()) {
-                responseObserver.onError(INVALID_ARGUMENT.withDescription("One or more invalid observations").asRuntimeException());
+                responseObserver.onCompleted();
             }
             else {
-                responseObserver.onNext(response);
-                responseObserver.onCompleted();
+                responseObserver.onError(INVALID_ARGUMENT.withDescription("One or more invalid observations").asRuntimeException());
             }
         }
     }
