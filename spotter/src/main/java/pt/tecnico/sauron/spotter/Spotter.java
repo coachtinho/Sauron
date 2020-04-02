@@ -29,6 +29,7 @@ public class Spotter {
     public void spot(String type, String id) {
         try {
             if (id.contains("*")) {
+                //TODO:order list by id
                 TrackMatchRequest request = TrackMatchRequest.newBuilder().setType(type).setId(id).build();
                 List<TrackResponse> observations = frontend.trackMatch(request).getObservationList();
                 observations.forEach((observation) -> printObservation(observation));
