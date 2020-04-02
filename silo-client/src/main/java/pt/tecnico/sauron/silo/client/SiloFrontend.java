@@ -38,14 +38,7 @@ public class SiloFrontend {
     }
 
     public CameraInfoResponse camInfo(final CameraInfoRequest request) {
-        CameraInfoResponse response = null;
-        try {
-            response = stub.camInfo(request);
-
-        } catch (final StatusRuntimeException e) {
-            System.out.println(e.getMessage());
-        }
-        return response;
+        return stub.camInfo(request);
     }
 
     public ReportResponse report(final ReportRequest request) {

@@ -10,13 +10,10 @@ import org.junit.jupiter.api.*;
 import io.grpc.StatusRuntimeException;
 import pt.tecnico.sauron.silo.grpc.Silo.CameraRegistrationRequest;
 import pt.tecnico.sauron.silo.grpc.Silo.CameraRegistrationResponse;
-import pt.tecnico.sauron.silo.grpc.Silo.CameraInfoRequest;
-import pt.tecnico.sauron.silo.grpc.Silo.CameraInfoResponse;
 import pt.tecnico.sauron.silo.grpc.Silo.ClearRequest;
 import pt.tecnico.sauron.silo.grpc.Silo.InitRequest;
-import pt.tecnico.sauron.silo.grpc.Silo.InitResponse;
 
-public class CamIT extends BaseIT {
+public class CamJoinIT extends BaseIT {
     // static members
     private static final String host = testProps.getProperty("server.host");
     private static final int port = Integer.parseInt(testProps.getProperty("server.port"));
@@ -60,7 +57,7 @@ public class CamIT extends BaseIT {
         assertNotEquals(response, null);
     }
 
-    /* @Test
+    @Test
     public void camJoinNoNameTest() {
         CameraRegistrationRequest request = CameraRegistrationRequest.newBuilder()
                 .setLatitude(123.45) //
@@ -68,10 +65,10 @@ public class CamIT extends BaseIT {
                 .build();
         Exception exception = assertThrows(StatusRuntimeException.class, () -> frontend.camJoin(request));        
         assertEquals(INVALID_ARGUMENT.asRuntimeException().getClass(), exception.getClass());        
-        String expectedMessage = "Name cannot be null!";
+        String expectedMessage = "Name cannot be empty!";
         String actualMessage = exception.getMessage();
         assertTrue(actualMessage.contains(expectedMessage));
-    } */
+    }
 
     @Test
     public void camJoinShortNameTest() {
@@ -115,29 +112,4 @@ public class CamIT extends BaseIT {
         String actualMessage = exception.getMessage();
         assertTrue(actualMessage.contains(expectedMessage));
     }
-
-    /* @Test
-    public void camInfoOKTest() {
-        String name = testProps.getProperty("camera.name");
-        Double lat = Double.parseDouble(testProps.getProperty("camera.latitude"));
-        Double longi = Double.parseDouble(testProps.getProperty("camera.longitude"));
-        CameraInfoRequest request = CameraInfoRequest.newBuilder()
-                .setName(name) //
-                .build();
-        CameraInfoResponse response = frontend.camInfo(request);
-        assertEquals(response.getLatitude(), lat);
-        assertEquals(response.getLongitude(), longi);
-    } */
-
-    /* @Test
-    public void camInfoNotFoundTest() {
-        CameraInfoRequest request = CameraRegistrationRequest.newBuilder()
-                .setName("Camera2") //
-                .build();
-        Exception exception = assertThrows(StatusRuntimeException.class, () -> frontend.camInfo(request));        
-        assertEquals(INVALID_ARGUMENT.asRuntimeException().getClass(), exception.getClass());        
-        String expectedMessage = "No such camera!";
-        String actualMessage = exception.getMessage();
-        assertTrue(actualMessage.contains(expectedMessage));
-    } */
 }

@@ -47,7 +47,7 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
 
     @Override
     public void ctrlInit(final InitRequest request, final StreamObserver<InitResponse> responseObserver) {
-        Camera cam = new Camera("Camera1", 123.45, 678.91);
+        Camera cam = new Camera("Camera1", 678.91, 123.45);
         siloServer.registerCamera(cam);
         siloServer.reportObservation("Camera1", "car", "87JB40");
         siloServer.reportObservation("Camera1", "person", "12345");
@@ -62,10 +62,10 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
         final String id = request.getId();
         Observation obs;
 
-        if (type == null) {
+        if (type.isBlank()) {
             responseObserver.onError(INVALID_ARGUMENT.withDescription("Type cannot be empty!").asRuntimeException());
             return;
-        } else if (id == null) {
+        } else if (id.isBlank()) {
             responseObserver.onError(INVALID_ARGUMENT.withDescription("Id cannot be empty!").asRuntimeException());
             return;
         }
@@ -108,10 +108,10 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
         final String id = request.getId();
         List<Observation> observations;
 
-        if (type == null) {
+        if (type.isBlank()) {
             responseObserver.onError(INVALID_ARGUMENT.withDescription("Type cannot be empty!").asRuntimeException());
             return;
-        } else if (id == null) {
+        } else if (id.isBlank()) {
             responseObserver.onError(INVALID_ARGUMENT.withDescription("Id cannot be empty!").asRuntimeException());
             return;
         }
@@ -160,10 +160,10 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
         final String id = request.getId();
         List<Observation> observations;
 
-        if (type == null) {
+        if (type.isBlank()) {
             responseObserver.onError(INVALID_ARGUMENT.withDescription("Type cannot be empty!").asRuntimeException());
             return;
-        } else if (id == null) {
+        } else if (id.isBlank()) {
             responseObserver.onError(INVALID_ARGUMENT.withDescription("Id cannot be empty!").asRuntimeException());
             return;
         }
