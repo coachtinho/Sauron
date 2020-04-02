@@ -4,7 +4,7 @@ import io.grpc.StatusRuntimeException;
 
 public class SiloClientApp {
 
-    public static void main(String[] args) {
+    /* public static void main(String[] args) {
         System.out.println(SiloClientApp.class.getSimpleName());
 
         // receive and print arguments
@@ -28,6 +28,6 @@ public class SiloClientApp {
 
         System.out.println("bye!");
 
-    }
+    } */
 
 }

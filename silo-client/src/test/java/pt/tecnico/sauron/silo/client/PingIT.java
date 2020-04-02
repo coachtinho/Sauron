@@ -10,11 +10,11 @@ import io.grpc.StatusRuntimeException;
 import pt.tecnico.sauron.silo.grpc.Silo.PingRequest;
 import pt.tecnico.sauron.silo.grpc.Silo.PingResponse;
 
-public class PingIT extends SiloIT {
+public class PingIT extends BaseIT {
 
     // static members
-    private static final String host = "localhost";
-    private static final int port = 8080;
+    private static final String host = testProps.getProperty("server.host");
+    private static final int port = Integer.parseInt(testProps.getProperty("server.port"));
     private static SiloFrontend frontend;
 
     // one-time initialization and clean-up
@@ -25,7 +25,7 @@ public class PingIT extends SiloIT {
 
     @AfterAll
     public static void oneTimeTearDown() {
-        // frontend.close();
+        frontend.close();
     }
 
     // initialization and clean-up for each test
