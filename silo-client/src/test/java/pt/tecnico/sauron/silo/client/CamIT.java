@@ -22,30 +22,30 @@ public class CamIT extends BaseIT {
     private static final int port = Integer.parseInt(testProps.getProperty("server.port"));
     private static SiloFrontend frontend;
 
-	// one-time initialization and clean-up
-	@BeforeAll
-	public static void oneTimeSetUp() {
+    // one-time initialization and clean-up
+    @BeforeAll
+    public static void oneTimeSetUp() {
         frontend = new SiloFrontend(host, port);
-	}
+    }
 
-	@AfterAll
-	public static void oneTimeTearDown() {
+    @AfterAll
+    public static void oneTimeTearDown() {
         frontend.close();
-	}
+    }
 
-	// initialization and clean-up for each test
+    // initialization and clean-up for each test
 
-	@BeforeEach
-	public void setUp() {
+    @BeforeEach
+    public void setUp() {
         InitRequest request = InitRequest.getDefaultInstance();
         frontend.ctrlInit(request);
-	}
+    }
 
-	@AfterEach
-	public void tearDown() {
+    @AfterEach
+    public void tearDown() {
         ClearRequest request = ClearRequest.getDefaultInstance();
         frontend.ctrlClear(request);
-	}
+    }
 	
     // tests
     
@@ -115,4 +115,29 @@ public class CamIT extends BaseIT {
         String actualMessage = exception.getMessage();
         assertTrue(actualMessage.contains(expectedMessage));
     }
+
+    /* @Test
+    public void camInfoOKTest() {
+        String name = testProps.getProperty("camera.name");
+        Double lat = Double.parseDouble(testProps.getProperty("camera.latitude"));
+        Double longi = Double.parseDouble(testProps.getProperty("camera.longitude"));
+        CameraInfoRequest request = CameraInfoRequest.newBuilder()
+                .setName(name) //
+                .build();
+        CameraInfoResponse response = frontend.camInfo(request);
+        assertEquals(response.getLatitude(), lat);
+        assertEquals(response.getLongitude(), longi);
+    } */
+
+    /* @Test
+    public void camInfoNotFoundTest() {
+        CameraInfoRequest request = CameraRegistrationRequest.newBuilder()
+                .setName("Camera2") //
+                .build();
+        Exception exception = assertThrows(StatusRuntimeException.class, () -> frontend.camInfo(request));        
+        assertEquals(INVALID_ARGUMENT.asRuntimeException().getClass(), exception.getClass());        
+        String expectedMessage = "No such camera!";
+        String actualMessage = exception.getMessage();
+        assertTrue(actualMessage.contains(expectedMessage));
+    } */
 }
