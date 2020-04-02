@@ -212,7 +212,7 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
         String name = request.getName();
         if (name == null) // Check name exists
             responseObserver.onError(INVALID_ARGUMENT.withDescription("Name cannot be null!").asRuntimeException());
-        if (name.length() > 15 || name.length() < 3) // Check name size
+        else if (name.length() > 15 || name.length() < 3) // Check name size
             responseObserver.onError(INVALID_ARGUMENT.withDescription("Name length is illegal!").asRuntimeException());
         else {
             try {
