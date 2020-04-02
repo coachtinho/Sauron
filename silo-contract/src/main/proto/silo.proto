@@ -89,8 +89,8 @@ message CameraInfoRequest {
 }
 
 message CameraInfoResponse {
-    string latitude = 1;
-    string longitude = 2;
+    double latitude = 1;
+    double longitude = 2;
 }
 
 // service

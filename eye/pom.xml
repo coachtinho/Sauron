@@ -17,6 +17,10 @@
 		<!-- see parent POM for more properties -->
 		<server.host>localhost</server.host>
 		<server.port>8080</server.port>
+		<name>localhost</name>
+		<camera.name>Alameda</camera.name>
+		<camera.longitude>-25.284736</camera.longitude>
+		<camera.latitude>30.621354</camera.latitude>		
 		<mainclass>pt.tecnico.sauron.eye.EyeApp</mainclass>
 	</properties>
 
@@ -68,6 +72,9 @@
 					<arguments>
 						<argument>${server.host}</argument>
 						<argument>${server.port}</argument>
+						<argument>${camera.name}</argument>
+						<argument>${camera.longitude}</argument>
+						<argument>${camera.latitude}</argument>						
 					</arguments>
 				</configuration>
 			</plugin>

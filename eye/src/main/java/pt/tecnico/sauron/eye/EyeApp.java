@@ -5,7 +5,7 @@ import java.util.Scanner;
 
 public class EyeApp {
 
-	public static void main(String[] args) {
+	public static void main(final String[] args) {
 
 		System.out.println(EyeApp.class.getSimpleName());
 
@@ -23,7 +23,11 @@ public class EyeApp {
 			System.out.printf("arg[%d] = %s%n", i, args[i]);
 		}
 
-		Eye spotter = new Eye(args[0], Integer.parseInt(args[1]));
+		final Eye eye = new Eye(args[0], Integer.parseInt(args[1]), //
+				args[2], // camera name
+				Double.parseDouble(args[3]), // longitude
+				Double.parseDouble(args[4])); // latitude
+
 		String[] arguments;
 		String keyword;
 
@@ -32,27 +36,24 @@ public class EyeApp {
 			while (true) {
 				keyword = scanner.next();
 
+				// TODO: does next line restart line?
+				// TODO: coment - regex
+				// TODO: empty line - maybe switch below?
+				// TODO: EOF - send report, exit loop
+
 				switch (keyword) {
-					case "spot":
-						arguments = scanner.nextLine().split(" ");
-						spotter.spot(arguments[0], arguments[1]);
+					case "":
+						eye.sendReport();
 						break;
-					case "trail":
-						arguments = scanner.nextLine().split(" ");
-						spotter.spot(arguments[0], arguments[1]);
+					case "car":
+					case "person":
+						arguments = scanner.nextLine().split(",");
+						eye.addToReport(arguments[0], arguments[1]);
 						break;
-					case "clear":
-						spotter.clear();
+					case "zzz":
+						arguments = scanner.nextLine().split(",");
+						eye.sleep(arguments[1]);
 						break;
-					case "init":
-						spotter.init();
-						break;
-					case "help":
-						spotter.help();
-						break;
-					case "exit":
-						spotter.exit();
-						return;
 					default:
 						System.out.println("Unsupported command: " + keyword);
 				}

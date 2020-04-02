@@ -28,16 +28,11 @@ public class SiloFrontend {
         return stub.ctrlClear(request);
     }
 
-    public void camJoin(String name, double longitude, double latitude) {
+    public CameraRegistrationResponse camJoin(String name, double longitude, double latitude) {
         CameraRegistrationRequest request = CameraRegistrationRequest.newBuilder().setName(name).setLongitude(longitude)
                 .setLatitude(latitude).build();
-        try {
-            CameraRegistrationResponse response = stub.camJoin(request);
-            System.out.println("Camera sucessfully registered!");
-        } catch (StatusRuntimeException e) {
-            System.out.println("Camera wasn't registered!");
-            System.out.println(e.getMessage());
-        }
+
+        return stub.camJoin(request);
     }
 
     public double[] camInfo(String name) {
@@ -46,8 +41,8 @@ public class SiloFrontend {
         double longitude = 0;
         try {
             CameraInfoResponse response = stub.camInfo(request);
-            latitude = Double.parseDouble(response.getLatitude());
-            longitude = Double.parseDouble(response.getLongitude());
+            latitude = response.getLatitude();
+            longitude = response.getLongitude();
 
         } catch (StatusRuntimeException e) {
             System.out.println(e.getMessage());

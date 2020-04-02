@@ -225,8 +225,8 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
         else if ((cam = siloServer.camInfo(name)) == null) // Check name exists
             responseObserver.onError(INVALID_ARGUMENT.withDescription("No such camera!").asRuntimeException());
         else {
-            String latitude = Double.toString(cam.getLatitude());
-            String longitude = Double.toString(cam.getLongitude());
+            double latitude = cam.getLatitude();
+            double longitude = cam.getLongitude();
             final CameraInfoResponse response = CameraInfoResponse.newBuilder() //
                     .setLatitude(latitude).setLongitude(longitude).build();
 
@@ -240,20 +240,19 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
         String cameraName = request.getCameraName();
         if (siloServer.hasCamera(cameraName)) {
             responseObserver.onError(INVALID_ARGUMENT.withDescription("No such camera").asRuntimeException());
-        } 
-        else {
+        } else {
             List<ReportItem> items = request.getReportsList();
             ReportResponse.Builder responseBuilder = ReportResponse.newBuilder();
             for (ReportItem item : items) {
                 String type = item.getType();
                 String id = item.getId();
                 if (!siloServer.isValidType(type)) {
-                    responseBuilder.addFailures(FailureItem.newBuilder().setType(type).setId(id).setMessage("Invalid type").build());
-                }
-                else if (!siloServer.isValidId(type, id)) {
-                    responseBuilder.addFailures(FailureItem.newBuilder().setType(type).setId(id).setMessage("Invalid id for specified type").build());
-                }
-                else {
+                    responseBuilder.addFailures(
+                            FailureItem.newBuilder().setType(type).setId(id).setMessage("Invalid type").build());
+                } else if (!siloServer.isValidId(type, id)) {
+                    responseBuilder.addFailures(FailureItem.newBuilder().setType(type).setId(id)
+                            .setMessage("Invalid id for specified type").build());
+                } else {
                     siloServer.reportObservation(cameraName, type, id);
                 }
             }
@@ -261,9 +260,9 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
             responseObserver.onNext(response);
             if (response.getFailuresList().isEmpty()) {
                 responseObserver.onCompleted();
-            }
-            else {
-                responseObserver.onError(INVALID_ARGUMENT.withDescription("One or more invalid observations").asRuntimeException());
+            } else {
+                responseObserver.onError(
+                        INVALID_ARGUMENT.withDescription("One or more invalid observations").asRuntimeException());
             }
         }
     }
