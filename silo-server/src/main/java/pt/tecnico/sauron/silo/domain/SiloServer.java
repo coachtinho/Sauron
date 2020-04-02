@@ -61,14 +61,10 @@ public class SiloServer {
 
     // Track Match command
     public List<Observation> trackMatchPerson(String id) {
-        if (!Person.isValidId(id))
-            throw new SiloException(ErrorMessage.INVALID_PERSON_ID);
         return trackMatch(_people, id);
     }
 
     public List<Observation> trackMatchCar(String id) {
-        if (!Car.isValidId(id))
-            throw new SiloException(ErrorMessage.INAVLID_CAR_ID);
         return trackMatch(_cars, id);
     }
 
