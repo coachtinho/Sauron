@@ -210,21 +210,21 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
     public void camJoin(final CameraRegistrationRequest request,
             final StreamObserver<CameraRegistrationResponse> responseObserver) {
         String name = request.getName();
-        if (name == null) // Check name exists
-            responseObserver.onError(INVALID_ARGUMENT.withDescription("Name cannot be null!").asRuntimeException());
+        if (name.isBlank()) // Check name exists
+            responseObserver.onError(INVALID_ARGUMENT.withDescription("Name cannot be empty!").asRuntimeException());
         else if (name.length() > 15 || name.length() < 3) // Check name size
             responseObserver.onError(INVALID_ARGUMENT.withDescription("Name length is illegal!").asRuntimeException());
         else {
             try {
                 Camera cam = new Camera(name, request.getLongitude(), request.getLatitude());
                 siloServer.registerCamera(cam);
+                final CameraRegistrationResponse response = CameraRegistrationResponse.newBuilder().build();
+                responseObserver.onNext(response);
+                responseObserver.onCompleted();
             } catch (SiloException e) {
                 responseObserver.onError(ALREADY_EXISTS.withDescription("Camera already exists!").asRuntimeException());
             }
 
-            final CameraRegistrationResponse response = CameraRegistrationResponse.newBuilder().build();
-            responseObserver.onNext(response);
-            responseObserver.onCompleted();
         }
     }
 
@@ -232,8 +232,8 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
     public void camInfo(final CameraInfoRequest request, final StreamObserver<CameraInfoResponse> responseObserver) {
         String name = request.getName();
         Camera cam;
-        if (name == null) // Check name exists
-            responseObserver.onError(INVALID_ARGUMENT.withDescription("Name cannot be null!").asRuntimeException());
+        if (name.isBlank()) // Check name exists
+            responseObserver.onError(INVALID_ARGUMENT.withDescription("Name cannot be empty!").asRuntimeException());
         else if ((cam = siloServer.camInfo(name)) == null) // Check name exists
             responseObserver.onError(INVALID_ARGUMENT.withDescription("No such camera!").asRuntimeException());
         else {
