@@ -45,7 +45,7 @@ public class Eye {
                 break;
             case "person":
                 if (!id.matches("[0-9]+"))
-                    System.out.println("Id " + id + "is illegal for type person");
+                    System.out.println("Id " + id + " is illegal for type person");
                 break;
             default:
                 System.out.println("Type not recognized");
