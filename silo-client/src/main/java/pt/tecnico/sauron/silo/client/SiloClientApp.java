@@ -13,7 +13,6 @@ public class SiloClientApp {
         for (int i = 0; i < args.length; i++) {
             System.out.printf("arg[%d] = %s%n", i, args[i]);
         }
-    }
 
         String host = "localhost";
         int port = 8080;
@@ -33,5 +32,4 @@ public class SiloClientApp {
         System.out.println("bye!");
 
     }
-
 }
