@@ -3,6 +3,8 @@ package pt.tecnico.sauron.eye;
 
 import java.util.Scanner;
 
+import io.grpc.StatusRuntimeException;
+
 public class EyeApp {
 
 	public static void main(final String[] args) {
@@ -28,36 +30,44 @@ public class EyeApp {
 				Double.parseDouble(args[3]), // longitude
 				Double.parseDouble(args[4])); // latitude
 
-		String[] arguments;
-		String keyword;
+		String[] input;
+		String line;
 
 		// Main cycle
 		try (Scanner scanner = new Scanner(System.in)) {
 			while (true) {
-				keyword = scanner.next();
 
-				// TODO: does next line restart line?
-				// TODO: coment - regex
-				// TODO: empty line - maybe switch below?
-				// TODO: EOF - send report, exit loop
+				line = scanner.nextLine();
+				if (line == null) // EOF
+					break;
+				if (line.matches("^#.*")) // ignore comment
+					continue;
+				else if (line.isEmpty()) { // handle empty lines
+					eye.sendReport();
+					continue;
+				}
 
-				switch (keyword) {
-					case "":
-						eye.sendReport();
-						break;
+				input = line.split(",");
+
+				if (input.length != 2) // if input doesnt have arguments, mark as illegal
+					input[0] = "illegal";
+
+				switch (input[0]) {
 					case "car":
 					case "person":
-						arguments = scanner.nextLine().split(",");
-						eye.addToReport(arguments[0], arguments[1]);
+						eye.addToReport(input[0], input[1]);
 						break;
 					case "zzz":
-						arguments = scanner.nextLine().split(",");
-						eye.sleep(arguments[1]);
+						eye.sleep(input[1]);
 						break;
+					case "illegal":
 					default:
-						System.out.println("Unsupported command: " + keyword);
+						System.out.println("Unsupported command: '" + line + "'");
 				}
 			}
+			eye.sendReport();
+		} catch (StatusRuntimeException e) {
+			System.out.println(e.getMessage());
 		}
 	}
 

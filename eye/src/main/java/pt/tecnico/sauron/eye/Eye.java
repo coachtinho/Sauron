@@ -23,8 +23,12 @@ public class Eye {
     double _latitude;
 
     public Eye(final String host, final int port, final String name, final double longitude, final double latitude) {
+        _name = name;
+        _longitude = longitude;
+        _latitude = latitude;
         _frontend = new SiloFrontend(host, port);
         _reports = new ArrayList<>();
+        register();
     }
 
     public void addToReport(final String type, final String id) {
@@ -36,12 +40,12 @@ public class Eye {
 
         switch (type) {
             case "car":
-                if (!type.matches("[A-Z0-9]{6}"))
-                    System.out.println("Id " + type + "is illegal for type car");
+                if (!id.matches("[A-Z0-9]{6}"))
+                    System.out.println("Id " + id + " is illegal for type car");
                 break;
             case "person":
-                if (!type.matches("[0-9]+"))
-                    System.out.println("Id " + type + "is illegal for type person");
+                if (!id.matches("[0-9]+"))
+                    System.out.println("Id " + id + "is illegal for type person");
                 break;
             default:
                 System.out.println("Type not recognized");
@@ -74,7 +78,7 @@ public class Eye {
             if (failures.isEmpty())
                 System.out.println("Sucessfully reported " + _reports.size() + " items");
             else
-                failures.forEach((failure) -> System.out.println(failure.getMessage()));
+                failures.forEach((failure) -> handleReportFailure(failure));
         } catch (final StatusRuntimeException exception) {
             handleException(exception);
         } finally { // Clear report list
@@ -84,19 +88,23 @@ public class Eye {
 
     public void register() {
         try {
-            CameraRegistrationResponse response = _frontend.camJoin(_name, _longitude, _latitude);
+            CameraRegistrationRequest request = CameraRegistrationRequest.newBuilder().setName(_name)
+                    .setLongitude(_longitude).setLatitude(_latitude).build();
+            CameraRegistrationResponse response = _frontend.camJoin(request);
             System.out.println("Camera was sucessfully registered");
         } catch (final StatusRuntimeException exception) {
             handleException(exception);
+            System.exit(-1);
         }
 
     }
 
     public void help() {
-        System.out.println("Eye: submits observations of the objects with identifiers\n" //
+        System.out.println("report: submits observations of the objects with identifiers\n" //
                 + "\tUsage: objectType,id\n" //
-                + "Help: shows commands supported by application\n" + "   Usage: help\n"//
-                + "Exit: exits the application\n" + "   Usage: exit");
+                + "zzz: halts command for x milliseconds\n" + "\tUsage: zzz,x\n" //
+                + "#: makes interpeter ignore this line\n" + "\tUsage: # insert comment here\n" //
+        );
     }
 
     public void sleep(String time) {
@@ -111,8 +119,12 @@ public class Eye {
 
     }
 
+    private void handleReportFailure(FailureItem failure) {
+        System.out.println(failure.getType() + "," + failure.getId() + ": " + failure.getMessage());
+    }
+
     // Add more custom messages if needed
-    public void handleException(final StatusRuntimeException exception) {
+    private void handleException(final StatusRuntimeException exception) {
         final Code statusCode = exception.getStatus().getCode();
         switch (statusCode) {
             case UNAVAILABLE:

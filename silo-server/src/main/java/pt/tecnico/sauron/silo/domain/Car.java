@@ -27,13 +27,15 @@ public class Car extends Observation {
         int nNumberGroups = 0; // number of number groups in license
         String group = id.substring(0, 2);
 
-        for (int i = 0, j = 2; j <= 6; i += 2, j += 2, group = id.substring(i, j))
+        for (int i = 0, j = 2; j <= 6; i += 2, j += 2) {
+            group = id.substring(i, j);            
             if (group.matches("[A-Z][A-Z]"))
                 nLetterGroups++;
             else if (group.matches("[0-9][0-9]"))
                 nNumberGroups++;
             else
                 return false;
+        }
 
         return nLetterGroups <= 2 && nNumberGroups <= 2;
     }

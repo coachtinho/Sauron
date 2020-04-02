@@ -116,9 +116,8 @@ public class SiloServer {
                 if (this._people.containsKey(id)) {
                     // Just add the observation
                     this._people.get(id).add(person);
-                }
-                else {
-                    //Create new entry in map
+                } else {
+                    // Create new entry in map
                     LinkedList<Observation> observations = new LinkedList<Observation>();
                     observations.add(person);
                     this._people.put(id, observations);
@@ -129,9 +128,8 @@ public class SiloServer {
                 if (this._cars.containsKey(id)) {
                     // Just add the observation
                     this._cars.get(id).add(car);
-                }
-                else {
-                    //Create new entry in map
+                } else {
+                    // Create new entry in map
                     LinkedList<Observation> observations = new LinkedList<Observation>();
                     observations.add(car);
                     this._cars.put(id, observations);
@@ -152,27 +150,27 @@ public class SiloServer {
         _people = Collections.synchronizedMap(new LinkedHashMap<>());
     }
 
-    public Map<String,Camera> getCameras() {
+    public Map<String, Camera> getCameras() {
         return this._cameras;
     }
 
-    public void setCameras(Map<String,Camera> _cameras) {
+    public void setCameras(Map<String, Camera> _cameras) {
         this._cameras = _cameras;
     }
 
-    public Map<String,LinkedList<Observation>> getCars() {
+    public Map<String, LinkedList<Observation>> getCars() {
         return this._cars;
     }
 
-    public void setCars(Map<String,LinkedList<Observation>> _cars) {
+    public void setCars(Map<String, LinkedList<Observation>> _cars) {
         this._cars = _cars;
     }
 
-    public Map<String,LinkedList<Observation>> getPeople() {
+    public Map<String, LinkedList<Observation>> getPeople() {
         return this._people;
     }
 
-    public void setPeople(Map<String,LinkedList<Observation>> _people) {
+    public void setPeople(Map<String, LinkedList<Observation>> _people) {
         this._people = _people;
     }
 

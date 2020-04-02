@@ -28,10 +28,7 @@ public class SiloFrontend {
         return stub.ctrlClear(request);
     }
 
-    public CameraRegistrationResponse camJoin(String name, double longitude, double latitude) {
-        CameraRegistrationRequest request = CameraRegistrationRequest.newBuilder().setName(name).setLongitude(longitude)
-                .setLatitude(latitude).build();
-
+    public CameraRegistrationResponse camJoin(CameraRegistrationRequest request) {
         return stub.camJoin(request);
     }
 
