@@ -1,14 +1,18 @@
 package pt.tecnico.sauron.silo.client;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.*;
-import io.grpc.StatusRuntimeException;
 import static org.junit.Assert.*;
+
 import pt.tecnico.sauron.silo.grpc.Silo.CameraRegistrationRequest;
 import pt.tecnico.sauron.silo.grpc.Silo.ClearRequest;
 import pt.tecnico.sauron.silo.grpc.Silo.ReportRequest;
 import pt.tecnico.sauron.silo.grpc.Silo.TrackRequest;
 import pt.tecnico.sauron.silo.grpc.Silo.TrackResponse;
 import pt.tecnico.sauron.silo.grpc.Silo.ReportRequest.ReportItem;
+
+import static io.grpc.Status.INVALID_ARGUMENT;
+import io.grpc.StatusRuntimeException;
 
 public class TrackIT extends BaseIT {
 
@@ -57,6 +61,7 @@ public class TrackIT extends BaseIT {
     @AfterAll
     public static void oneTimeTearDown() {
         frontend.ctrlClear(ClearRequest.newBuilder().build());
+        frontend.close();
     }
 
     @BeforeEach
@@ -73,14 +78,14 @@ public class TrackIT extends BaseIT {
         String reportId = reportRequest1.getReports(0).getId();
         TrackRequest request = TrackRequest.newBuilder().setType(reportType).setId(reportId).build();
         TrackResponse response = frontend.track(request);
-        assertEquals(response.getId(), reportId);
-        assertEquals(response.getType(), reportType);
+        assertEquals(reportId, response.getId());
+        assertEquals(reportType, response.getType());
         long seconds = response.getTimestamp().getSeconds();
         long secondsNow = System.currentTimeMillis() / 1000l;
         assertTrue(Long.toString(seconds), (seconds >= secondsNow - offset) && (seconds <= secondsNow + offset));
-        assertEquals(response.getName(), camRequest1.getName());
-        assertEquals(response.getLongitude(), camRequest1.getLongitude(), 0.000001);
-        assertEquals(response.getLongitude(), camRequest1.getLongitude(), 0.000001);
+        assertEquals(camRequest1.getName(), response.getName());
+        assertEquals(camRequest1.getLongitude(), response.getLongitude(), 0.000001);
+        assertEquals(camRequest1.getLatitude(), response.getLatitude(), 0.000001);
     }
 
     @Test
@@ -89,14 +94,85 @@ public class TrackIT extends BaseIT {
         String reportId = reportRequest1.getReports(2).getId();
         TrackRequest request = TrackRequest.newBuilder().setType(reportType).setId(reportId).build();
         TrackResponse response = frontend.track(request);
-        assertEquals(response.getId(), reportId);
-        assertEquals(response.getType(), reportType);
+        assertEquals(reportId, response.getId());
+        assertEquals(reportType, response.getType());
         long seconds = response.getTimestamp().getSeconds();
         long secondsNow = System.currentTimeMillis() / 1000l;
         assertTrue(Long.toString(seconds), (seconds >= secondsNow - offset) && (seconds <= secondsNow + offset));
-        assertEquals(response.getName(), camRequest1.getName());
-        assertEquals(response.getLongitude(), camRequest1.getLongitude(), 0.000001);
-        assertEquals(response.getLongitude(), camRequest1.getLongitude(), 0.000001);
+        assertEquals(camRequest1.getName(), response.getName());
+        assertEquals(camRequest1.getLongitude(), response.getLongitude(), 0.000001);
+        assertEquals(camRequest1.getLongitude(), response.getLatitude(), 0.000001);
+    }
+
+    @Test
+    public void trackEmptyTypeTest() {
+        String reportId = reportRequest1.getReports(0).getId();
+        TrackRequest request = TrackRequest.newBuilder().setId(reportId).build();
+        StatusRuntimeException exception = assertThrows(StatusRuntimeException.class, () -> frontend.track(request));
+        assertEquals(INVALID_ARGUMENT.getCode(), exception.getStatus().getCode());
+        assertEquals("INVALID_ARGUMENT: Type cannot be empty!", exception.getMessage());
+    }
+
+    @Test
+    public void trackEmptyIdTest() {
+        String reportType = reportRequest1.getReports(0).getType();
+        TrackRequest request = TrackRequest.newBuilder().setType(reportType).build();
+        StatusRuntimeException exception = assertThrows(StatusRuntimeException.class, () -> frontend.track(request));
+        assertEquals(INVALID_ARGUMENT.getCode(), exception.getStatus().getCode());
+        assertEquals("INVALID_ARGUMENT: Id cannot be empty!", exception.getMessage());
+    }
+
+    @Test
+    public void trackInvalidPersonIdTest() {
+        String reportType = reportRequest1.getReports(0).getType();
+        TrackRequest request = TrackRequest.newBuilder().setType(reportType).setId("a").build();
+        StatusRuntimeException exception = assertThrows(StatusRuntimeException.class, () -> frontend.track(request));
+        assertEquals(INVALID_ARGUMENT.getCode(), exception.getStatus().getCode());
+        assertEquals("INVALID_ARGUMENT: Person ID doesn't match rules", exception.getMessage());
+    }
+
+    @Test
+    public void trackInvalidCarIdTest() {
+        String reportType = reportRequest1.getReports(2).getType();
+        TrackRequest request = TrackRequest.newBuilder().setType(reportType).setId("1").build();
+        StatusRuntimeException exception = assertThrows(StatusRuntimeException.class, () -> frontend.track(request));
+        assertEquals(INVALID_ARGUMENT.getCode(), exception.getStatus().getCode());
+        assertEquals("INVALID_ARGUMENT: Car ID doesn't match rules", exception.getMessage());
+    }
+    
+    @Test
+    public void trackInvalidTypeTest() {
+        String reportId = reportRequest1.getReports(0).getId();
+        TrackRequest request = TrackRequest.newBuilder().setType("a").setId(reportId).build();
+        StatusRuntimeException exception = assertThrows(StatusRuntimeException.class, () -> frontend.track(request));
+        assertEquals(INVALID_ARGUMENT.getCode(), exception.getStatus().getCode());
+        assertEquals("INVALID_ARGUMENT: Type is not a valid observation!", exception.getMessage());
+    }
+
+    @Test
+    public void trackNonExistingPersonTest() {
+        String reportType = reportRequest1.getReports(0).getType();
+        TrackRequest request = TrackRequest.newBuilder().setType(reportType).setId("123").build();
+        TrackResponse response = frontend.track(request);
+        assertEquals("", response.getId());
+        assertEquals("", response.getType());
+        assertEquals(0, response.getTimestamp().getSeconds());
+        assertEquals("", response.getName());
+        assertEquals(0, response.getLongitude(), 0.000001);
+        assertEquals(0, response.getLatitude(), 0.000001);
+    }
+
+    @Test
+    public void trackNonExistingCarTest() {
+        String reportType = reportRequest1.getReports(2).getType();
+        TrackRequest request = TrackRequest.newBuilder().setType(reportType).setId("AA12AA").build();
+        TrackResponse response = frontend.track(request);
+        assertEquals("", response.getId());
+        assertEquals("", response.getType());
+        assertEquals(0, response.getTimestamp().getSeconds());
+        assertEquals("", response.getName());
+        assertEquals(0, response.getLongitude(), 0.000001);
+        assertEquals(0, response.getLatitude(), 0.000001);
     }
 
 }

@@ -52,6 +52,7 @@ public class Spotter {
         }
     }
 
+    //TODO: ver se esta null
     public void printObservation(TrackResponse observation) {
         System.out.printf("%s,%s,%t,%s,%f,%f%n", observation.getType(), observation.getId(),  timeConverter(observation.getTimestamp()), 
                 observation.getName(), observation.getLatitude(), observation.getLongitude());

@@ -1,10 +1,11 @@
 package pt.tecnico.sauron.silo.client;
 
-import org.junit.Test;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import org.junit.jupiter.api.*;
+import static org.junit.Assert.*;
+
+import static io.grpc.Status.INVALID_ARGUMENT;
+import io.grpc.StatusRuntimeException;
 
 public class TrackMatchIT extends BaseIT {
     private static SiloFrontend frontend;
