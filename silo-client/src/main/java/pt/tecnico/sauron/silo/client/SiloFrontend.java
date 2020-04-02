@@ -2,7 +2,6 @@ package pt.tecnico.sauron.silo.client;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import io.grpc.StatusRuntimeException;
 import pt.tecnico.sauron.silo.grpc.SauronGrpc;
 import pt.tecnico.sauron.silo.grpc.Silo.*;
 
@@ -12,63 +11,59 @@ public class SiloFrontend {
 
     SauronGrpc.SauronBlockingStub stub;
 
-    public SiloFrontend(String host, int port) {
+    public SiloFrontend(final String host, final int port) {
         System.out.println(host + ":" + port);
-        String target = host + ":" + port;
+        final String target = host + ":" + port;
 
         channel = ManagedChannelBuilder.forTarget(target).usePlaintext().build();
         stub = SauronGrpc.newBlockingStub(channel);
     }
 
-    public PingResponse ctrlPing(PingRequest request) {
+    public PingResponse ctrlPing(final PingRequest request) {
         return stub.ctrlPing(request);
     }
 
-    public ClearResponse ctrlClear(ClearRequest request) {
+    public ClearResponse ctrlClear(final ClearRequest request) {
         return stub.ctrlClear(request);
     }
 
-    public InitResponse ctrlInit(InitRequest request) {
+    public InitResponse ctrlInit(final InitRequest request) {
         // Loads server with one camera, person and car
         return stub.ctrlInit(request);
     }
 
-    public CameraRegistrationResponse camJoin(CameraRegistrationRequest request) {
+    public CameraRegistrationResponse camJoin(final CameraRegistrationRequest request) {
         return stub.camJoin(request);
     }
 
-    public double[] camInfo(String name) {
-        CameraInfoRequest request = CameraInfoRequest.newBuilder().setName(name).build();
-        double latitude = 0;
-        double longitude = 0;
+    public CameraInfoResponse camInfo(final CameraInfoRequest request) {
+        CameraInfoResponse response = null;
         try {
-            CameraInfoResponse response = stub.camInfo(request);
-            latitude = response.getLatitude();
-            longitude = response.getLongitude();
+            response = stub.camInfo(request);
 
-        } catch (StatusRuntimeException e) {
+        } catch (final StatusRuntimeException e) {
             System.out.println(e.getMessage());
         }
-        return new double[] { longitude, latitude };
+        return response;
     }
 
-    public ReportResponse report(ReportRequest request) {
+    public ReportResponse report(final ReportRequest request) {
         return stub.report(request);
     }
 
-    public TrackResponse track(TrackRequest request) {
+    public TrackResponse track(final TrackRequest request) {
         return stub.track(request);
     }
 
-    public TrackMatchResponse trackMatch(TrackMatchRequest request) {
+    public TrackMatchResponse trackMatch(final TrackMatchRequest request) {
         return stub.trackMatch(request);
     }
 
-    public TraceResponse trace(TraceRequest request) {
+    public TraceResponse trace(final TraceRequest request) {
         return stub.trace(request);
     }
 
     public void close() {
-        channel.shutdown();
+        channel.shutdownNow();
     }
 }

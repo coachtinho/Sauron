@@ -1,10 +1,11 @@
 package pt.tecnico.sauron.silo.client;
 
 import io.grpc.StatusRuntimeException;
+import pt.tecnico.sauron.silo.grpc.Silo.CameraRegistrationRequest;
 
 public class SiloClientApp {
 
-    /* public static void main(String[] args) {
+    public static void main(String[] args) {
         System.out.println(SiloClientApp.class.getSimpleName());
 
         // receive and print arguments
@@ -12,6 +13,7 @@ public class SiloClientApp {
         for (int i = 0; i < args.length; i++) {
             System.out.printf("arg[%d] = %s%n", i, args[i]);
         }
+    }
 
         String host = "localhost";
         int port = 8080;
@@ -19,7 +21,9 @@ public class SiloClientApp {
         SiloFrontend frontend = new SiloFrontend(host, port);
 
         try {
-            frontend.camJoin("cam1", 234.432, 123.123);
+            CameraRegistrationRequest request = CameraRegistrationRequest.newBuilder().setLatitude(12.3)
+                    .setLongitude(-123.23).build();
+            frontend.camJoin(request);
         } catch (StatusRuntimeException e) {
             System.out.println(e.getMessage());
         } finally {
@@ -28,6 +32,6 @@ public class SiloClientApp {
 
         System.out.println("bye!");
 
-    } */
+    }
 
 }
