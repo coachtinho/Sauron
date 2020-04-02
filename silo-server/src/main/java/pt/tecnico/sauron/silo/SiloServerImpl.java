@@ -37,9 +37,21 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
         }
     }
 
+    @Override
     public void ctrlClear(final ClearRequest request, final StreamObserver<ClearResponse> responseObserver) {
         siloServer.clear();
-        final ClearResponse response = ClearResponse.newBuilder().build();
+        final ClearResponse response = ClearResponse.getDefaultInstance();
+        responseObserver.onNext(response);
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void ctrlInit(final InitRequest request, final StreamObserver<InitResponse> responseObserver) {
+        Camera cam = new Camera("Camera1", 123.45, 678.91);
+        siloServer.registerCamera(cam);
+        siloServer.reportObservation("Camera1", "car", "87JB40");
+        siloServer.reportObservation("Camera1", "person", "12345");
+        final InitResponse response = InitResponse.getDefaultInstance();
         responseObserver.onNext(response);
         responseObserver.onCompleted();
     }

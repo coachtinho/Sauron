@@ -13,6 +13,8 @@ import pt.tecnico.sauron.silo.grpc.Silo.CameraRegistrationResponse;
 import pt.tecnico.sauron.silo.grpc.Silo.CameraInfoRequest;
 import pt.tecnico.sauron.silo.grpc.Silo.CameraInfoResponse;
 import pt.tecnico.sauron.silo.grpc.Silo.ClearRequest;
+import pt.tecnico.sauron.silo.grpc.Silo.InitRequest;
+import pt.tecnico.sauron.silo.grpc.Silo.InitResponse;
 
 public class CamIT extends BaseIT {
     // static members
@@ -35,7 +37,8 @@ public class CamIT extends BaseIT {
 
 	@BeforeEach
 	public void setUp() {
-
+        InitRequest request = InitRequest.getDefaultInstance();
+        frontend.ctrlInit(request);
 	}
 
 	@AfterEach
@@ -49,7 +52,7 @@ public class CamIT extends BaseIT {
     @Test
     public void camJoinOKTest() {
         CameraRegistrationRequest request = CameraRegistrationRequest.newBuilder()
-                .setName("Camera 1") //
+                .setName("Camera2") //
                 .setLatitude(123.45) //
                 .setLongitude(678.91) //
                 .build();
@@ -67,7 +70,6 @@ public class CamIT extends BaseIT {
         assertEquals(INVALID_ARGUMENT.asRuntimeException().getClass(), exception.getClass());        
         String expectedMessage = "Name cannot be null!";
         String actualMessage = exception.getMessage();
-        System.out.println(actualMessage);
         assertTrue(actualMessage.contains(expectedMessage));
     }
 
@@ -101,18 +103,13 @@ public class CamIT extends BaseIT {
 
     @Test
     public void camJoinDuplicateTest() {
-        CameraRegistrationRequest request1 = CameraRegistrationRequest.newBuilder()
-                .setName("Camera1") //
+        String name = testProps.getProperty("camera.name");
+        CameraRegistrationRequest request = CameraRegistrationRequest.newBuilder()
+                .setName(name) //
                 .setLatitude(123.45) //
                 .setLongitude(678.91) //
                 .build();
-        CameraRegistrationRequest request2 = CameraRegistrationRequest.newBuilder()
-                .setName("Camera1") //
-                .setLatitude(123.45) //
-                .setLongitude(678.91) //
-                .build();
-        frontend.camJoin(request1);
-        Exception exception = assertThrows(StatusRuntimeException.class, () -> frontend.camJoin(request2));        
+        Exception exception = assertThrows(StatusRuntimeException.class, () -> frontend.camJoin(request));        
         assertEquals(INVALID_ARGUMENT.asRuntimeException().getClass(), exception.getClass());        
         String expectedMessage = "Camera already exists!";
         String actualMessage = exception.getMessage();

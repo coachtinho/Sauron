@@ -98,6 +98,7 @@ message CameraInfoResponse {
 service Sauron {
     rpc ctrlPing(PingRequest) returns (PingResponse);
     rpc ctrlClear(ClearRequest) returns (ClearResponse);
+    rpc ctrlInit(InitRequest) returns (InitResponse);
     rpc camJoin(CameraRegistrationRequest) returns (CameraRegistrationResponse);
     rpc camInfo(CameraInfoRequest) returns (CameraInfoResponse);
     rpc track(TrackRequest) returns (TrackResponse);

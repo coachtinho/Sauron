@@ -28,6 +28,11 @@ public class SiloFrontend {
         return stub.ctrlClear(request);
     }
 
+    public InitResponse ctrlInit(InitRequest request) {
+        // Loads server with one camera, person and car
+        return stub.ctrlInit(request);
+    }
+
     public CameraRegistrationResponse camJoin(CameraRegistrationRequest request) {
         return stub.camJoin(request);
     }
