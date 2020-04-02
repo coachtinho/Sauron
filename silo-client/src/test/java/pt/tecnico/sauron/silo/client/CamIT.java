@@ -60,7 +60,7 @@ public class CamIT extends BaseIT {
         assertNotEquals(response, null);
     }
 
-    @Test
+    /* @Test
     public void camJoinNoNameTest() {
         CameraRegistrationRequest request = CameraRegistrationRequest.newBuilder()
                 .setLatitude(123.45) //
@@ -71,7 +71,7 @@ public class CamIT extends BaseIT {
         String expectedMessage = "Name cannot be null!";
         String actualMessage = exception.getMessage();
         assertTrue(actualMessage.contains(expectedMessage));
-    }
+    } */
 
     @Test
     public void camJoinShortNameTest() {
