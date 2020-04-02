@@ -2,7 +2,6 @@ package pt.tecnico.sauron.silo.client;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import io.grpc.StatusRuntimeException;
 import pt.tecnico.sauron.silo.grpc.SauronGrpc;
 import pt.tecnico.sauron.silo.grpc.Silo.*;
 
@@ -37,19 +36,8 @@ public class SiloFrontend {
         return stub.camJoin(request);
     }
 
-    public double[] camInfo(String name) {
-        CameraInfoRequest request = CameraInfoRequest.newBuilder().setName(name).build();
-        double latitude = 0;
-        double longitude = 0;
-        try {
-            CameraInfoResponse response = stub.camInfo(request);
-            latitude = response.getLatitude();
-            longitude = response.getLongitude();
-
-        } catch (StatusRuntimeException e) {
-            System.out.println(e.getMessage());
-        }
-        return new double[] { longitude, latitude };
+    public CameraInfoResponse camInfo(CameraInfoRequest request) {
+        return stub.camInfo(request);
     }
 
     public ReportResponse report(ReportRequest request) {

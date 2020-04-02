@@ -36,7 +36,6 @@ public class PingIT extends BaseIT {
 
     @AfterEach
     public void tearDown() {
-
     }
 
     // tests

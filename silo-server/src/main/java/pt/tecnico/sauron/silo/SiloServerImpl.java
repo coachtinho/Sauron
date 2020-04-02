@@ -250,7 +250,7 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
     @Override
     public void report(final ReportRequest request, final StreamObserver<ReportResponse> responseObserver) {
         String cameraName = request.getCameraName();
-        if (siloServer.hasCamera(cameraName)) {
+        if (!siloServer.hasCamera(cameraName)) {
             responseObserver.onError(INVALID_ARGUMENT.withDescription("No such camera").asRuntimeException());
         } else {
             List<ReportItem> items = request.getReportsList();

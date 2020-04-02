@@ -4,13 +4,16 @@ import pt.tecnico.sauron.silo.client.SiloFrontend;
 import pt.tecnico.sauron.silo.grpc.Silo.ClearRequest;
 import pt.tecnico.sauron.silo.grpc.Silo.PingRequest;
 import pt.tecnico.sauron.silo.grpc.Silo.TraceRequest;
-import pt.tecnico.sauron.silo.grpc.Silo.TraceResponse;
 import pt.tecnico.sauron.silo.grpc.Silo.TrackMatchRequest;
-import pt.tecnico.sauron.silo.grpc.Silo.TrackMatchResponse;
 import pt.tecnico.sauron.silo.grpc.Silo.TrackRequest;
 import pt.tecnico.sauron.silo.grpc.Silo.TrackResponse;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
+
+import com.google.protobuf.Timestamp;
 
 import io.grpc.StatusRuntimeException;
 import io.grpc.Status.Code;
@@ -50,14 +53,12 @@ public class Spotter {
     }
 
     public void printObservation(TrackResponse observation) {
-        System.out.printf("%s,%s,%t,%s,%f,%f%n", 
-            observation.getType(),
-            observation.getId(),
-            observation.getTimestamp(),
-            observation.getName(),
-            observation.getLatitude(),
-            observation.getLongitude()
-        );
+        System.out.printf("%s,%s,%t,%s,%f,%f%n", observation.getType(), observation.getId(),  timeConverter(observation.getTimestamp()), 
+                observation.getName(), observation.getLatitude(), observation.getLongitude());
+    }
+
+    public LocalDateTime timeConverter(Timestamp timestamp) {
+        return Instant.ofEpochSecond(timestamp.getSeconds(), timestamp.getNanos()).atZone(ZoneId.of("Portugal")).toLocalDateTime();
     }
 
     public void ping() {
@@ -86,13 +87,21 @@ public class Spotter {
 
     public void help() {
         System.out.println(
-                "Spot: shows information regarding observations of the objects with identifiers that match with id\n"
-                        + "   Usage: spotter objectType id\n" + "Trail: shows the path taken by the object with id\n"
-                        + "   Usage: trail objectType id\n" + "Ping: shows information regarding the state of server\n"
-                        + "   Usage: ping\n" + "Clear: cleans server state\n" + "   Usage: clear\n"
-                        + "Init: configures server\n" + "   Usage: init\n"
-                        + "Help: shows commands supported by application\n" + "   Usage: help\n"
-                        + "Exit: exits the application\n" + "   Usage: exit");
+                "Spot: shows information regarding observations of the objects with identifiers that match with id\n" + //
+                        "   Usage: spotter objectType id\n" + //
+                        "Trail: shows the path taken by the object with id\n" + //
+                        "   Usage: trail objectType id\n" + //
+                        "Ping: shows information regarding the state of server\n" + //
+                        "   Usage: ping\n" + //
+                        "Clear: cleans server state\n" + //
+                        "   Usage: clear\n" + //
+                        "Init: configures server\n" + //
+                        "   Usage: init\n" + //
+                        "Help: shows commands supported by application\n" + //
+                        "   Usage: help\n" + //
+                        "Exit: exits the application\n" + //
+                        "   Usage: exit" //
+        );
     }
 
     public void exit() {

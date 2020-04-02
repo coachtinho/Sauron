@@ -10,7 +10,7 @@ public class SpotterApp {
 
 		// receive and print arguments
 		System.out.printf("Received %d arguments%n", args.length);
-		
+
 		// check arguments
 		if (args.length < 2) {
 			System.out.println("Incorrect amount of arguments!");
@@ -24,8 +24,8 @@ public class SpotterApp {
 
 		Spotter spotter = new Spotter(args[0], Integer.parseInt(args[1]));
 		String[] arguments;
-		String keyword;
-		
+		String keyword, line;
+
 		// Main cycle
 		try (Scanner scanner = new Scanner(System.in)) {
 			while (true) {
@@ -33,30 +33,40 @@ public class SpotterApp {
 
 				switch (keyword) {
 					case "spot":
-						arguments = scanner.nextLine().split(" ");
-						spotter.spot(arguments[1], arguments[2]);
+						line = scanner.nextLine();
+						if (line.matches(" [a-z]+ [a-zA-Z0-9*]+")) {
+							arguments = line.split(" ");
+							spotter.spot(arguments[1], arguments[2]);
+						} else {
+							System.out.println("Invalid arguments");
+						}
 						break;
 					case "trail":
-						arguments = scanner.nextLine().split(" ");
-						spotter.spot(arguments[1], arguments[2]);
+						line = scanner.nextLine();
+						if (line.matches(" [a-z]+ [a-zA-Z0-9]+")) {
+							arguments = line.split(" ");
+							spotter.spot(arguments[1], arguments[2]);
+						} else {
+							System.out.println("Invalid arguments");
+						}
 						break;
 					case "ping":
-						//ignores rest of the line
+						// ignores rest of the line
 						scanner.nextLine();
 						spotter.ping();
 						break;
 					case "clear":
-						//ignores rest of the line
+						// ignores rest of the line
 						scanner.nextLine();
 						spotter.clear();
 						break;
 					case "init":
-						//ignores rest of the line
+						// ignores rest of the line
 						scanner.nextLine();
 						spotter.init();
 						break;
 					case "help":
-						//ignores rest of the line
+						// ignores rest of the line
 						scanner.nextLine();
 						spotter.help();
 						break;
@@ -69,5 +79,4 @@ public class SpotterApp {
 			}
 		}
 	}
-
 }
