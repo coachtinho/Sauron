@@ -1,6 +1,7 @@
 
 package pt.tecnico.sauron.eye;
 
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 import io.grpc.StatusRuntimeException;
@@ -27,8 +28,8 @@ public class EyeApp {
 
 		final Eye eye = new Eye(args[0], Integer.parseInt(args[1]), //
 				args[2], // camera name
-				Double.parseDouble(args[3]), // longitude
-				Double.parseDouble(args[4])); // latitude
+				Double.parseDouble(args[3]), // latitude
+				Double.parseDouble(args[4])); // longitude
 
 		String[] input;
 		String line;
@@ -36,10 +37,14 @@ public class EyeApp {
 		// Main cycle
 		try (Scanner scanner = new Scanner(System.in)) {
 			while (true) {
-
-				line = scanner.nextLine();
-				if (line == null) // EOF
+				try {
+					line = scanner.nextLine();
+				} catch (NoSuchElementException e) { // reached EOF
+					eye.sendReport();
+					eye.exit();
 					break;
+				}
+				
 				if (line.matches("^#.*")) // ignore comment
 					continue;
 				else if (line.isEmpty()) { // handle empty lines
@@ -65,7 +70,6 @@ public class EyeApp {
 						System.out.println("Unsupported command: '" + line + "'");
 				}
 			}
-			eye.sendReport();
 		} catch (StatusRuntimeException e) {
 			System.out.println(e.getMessage());
 		}

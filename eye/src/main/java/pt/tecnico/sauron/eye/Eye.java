@@ -19,13 +19,13 @@ public class Eye {
     SiloFrontend _frontend;
     List<Item> _reports;
     String _name;
-    double _longitude;
     double _latitude;
+    double _longitude;
 
-    public Eye(final String host, final int port, final String name, final double longitude, final double latitude) {
+    public Eye(final String host, final int port, final String name, final double latitude, final double longitude) {
         _name = name;
-        _longitude = longitude;
         _latitude = latitude;
+        _longitude = longitude;
         _frontend = new SiloFrontend(host, port);
         _reports = new ArrayList<>();
         register();
@@ -97,7 +97,7 @@ public class Eye {
     public void register() {
         try {
             CameraRegistrationRequest request = CameraRegistrationRequest.newBuilder().setName(_name)
-                    .setLongitude(_longitude).setLatitude(_latitude).build();
+                    .setLatitude(_latitude).setLongitude(_longitude).build();
             CameraRegistrationResponse response = _frontend.camJoin(request);
             System.out.println("Camera was sucessfully registered");
         } catch (final StatusRuntimeException exception) {
@@ -106,15 +106,7 @@ public class Eye {
         }
 
     }
-
-    public void help() {
-        System.out.println("report: submits observations of the objects with identifiers\n" //
-                + "\tUsage: objectType,id\n" //
-                + "zzz: halts command for x milliseconds\n" + "\tUsage: zzz,x\n" //
-                + "#: makes interpeter ignore this line\n" + "\tUsage: # insert comment here\n" //
-        );
-    }
-
+    
     public void sleep(String time) {
         try {
             long sleep = Long.parseLong(time);
