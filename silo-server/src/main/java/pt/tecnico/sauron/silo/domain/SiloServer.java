@@ -103,31 +103,30 @@ public class SiloServer {
     }
 
     public void reportObservation(String cameraName, String type, String id) {
-        Camera camera = this._cameras.get(cameraName);
+        Camera camera = _cameras.get(cameraName);
         switch (type) {
             case "person":
                 Person person = new Person(id, camera);
-                if (this._people.containsKey(id)) {
+                if (_people.containsKey(id)) {
                     // Just add the observation
-                    this._people.get(id).add(0, person);
+                    _people.get(id).add(0, person);
                 } else {
                     // Create new entry in map
                     List<Observation> observations = Collections.synchronizedList(new LinkedList<Observation>());
                     observations.add(0, person);
-                    this._people.put(id, observations);
+                    _people.put(id, observations);
                 }
                 break;
             case "car":
                 Car car = new Car(id, camera);
-                if (this._cars.containsKey(id)) {
+                if (_cars.containsKey(id)) {
                     // Just add the observation
-                    this._cars.get(id).add(0, car);
-                    ;
+                    _cars.get(id).add(0, car);
                 } else {
                     // Create new entry in map
                     List<Observation> observations = Collections.synchronizedList(new LinkedList<Observation>());
                     observations.add(0, car);
-                    this._cars.put(id, observations);
+                    _cars.put(id, observations);
                 }
                 break;
             default:
@@ -146,31 +145,31 @@ public class SiloServer {
     }
 
     public Map<String, Camera> getCameras() {
-        return this._cameras;
+        return _cameras;
     }
 
-    public void setCameras(Map<String, Camera> _cameras) {
-        this._cameras = _cameras;
+    public void setCameras(Map<String, Camera> cameras) {
+        _cameras = cameras;
     }
 
     public Map<String, List<Observation>> getCars() {
-        return this._cars;
+        return _cars;
     }
 
-    public void setCars(Map<String, List<Observation>> _cars) {
-        this._cars = _cars;
+    public void setCars(Map<String, List<Observation>> cars) {
+        _cars = cars;
     }
 
     public Map<String, List<Observation>> getPeople() {
-        return this._people;
+        return _people;
     }
 
-    public void setPeople(Map<String, List<Observation>> _people) {
-        this._people = _people;
+    public void setPeople(Map<String, List<Observation>> people) {
+        _people = people;
     }
 
     public boolean hasCamera(String name) {
-        return this._cameras.containsKey(name);
+        return _cameras.containsKey(name);
     }
 
     public boolean isValidId(String type, String id) {
