@@ -1,7 +1,6 @@
 package pt.tecnico.sauron.silo.domain;
 
 import java.util.List;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.lang.String;
 import java.util.Collections;
@@ -14,9 +13,9 @@ public class SiloServer {
     private Map<String, LinkedList<Observation>> _people;
 
     public SiloServer() {
-        _cameras = new HashMap<>();
-        _cars = Collections.synchronizedMap(new LinkedHashMap<>());
-        _people = Collections.synchronizedMap(new LinkedHashMap<>());
+        _cameras = Collections.synchronizedMap(new HashMap<>());
+        _cars = Collections.synchronizedMap(new HashMap<>());
+        _people = Collections.synchronizedMap(new HashMap<>());
     }
 
     // Track command
@@ -142,8 +141,8 @@ public class SiloServer {
 
     public void clear() {
         _cameras = Collections.synchronizedMap(new HashMap<>());
-        _cars = Collections.synchronizedMap(new LinkedHashMap<>());
-        _people = Collections.synchronizedMap(new LinkedHashMap<>());
+        _cars = Collections.synchronizedMap(new HashMap<>());
+        _people = Collections.synchronizedMap(new HashMap<>());
     }
 
     public Map<String, Camera> getCameras() {
