@@ -4,9 +4,9 @@
 
 This is a Sauron application where 2 different clients: **eye** and **spotter** can send data to server.
 
-## Instructions for installing
+## Step 0: Install project
 
-Make sure that the parent POM was installed first, and you are on the project's root folder.
+To install, open a shell on the root folder and run:
 
 ```
 mvn clean install -DskipTests
@@ -65,7 +65,7 @@ cd ../spotter/
 mvn exec:java
 ```
 
-Make Sure you see the following output:
+Make sure you see the following output:
 
 ```
 SpotterApp
@@ -75,7 +75,7 @@ arg[1] = 8080
 localhost:8080
 ```
 
-### Help
+### Help:
 
 To access information about the supported commands write:
 
@@ -104,7 +104,7 @@ Exit: exits the application
 
 ### Init
 
-Then, to add some default observations to the server, you can do the command init:
+Then, to add some test observations to the server, run the init command:
 
 ```
 init
