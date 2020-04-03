@@ -82,7 +82,7 @@ public class SiloServer {
             }
         } else {
             // since split method uses regex it's better to not use a special regex
-            // characater
+            // character
             String[] patterns = expr.replace("*", "@").split("@", -1);
 
             for (String id : observations.keySet()) {
@@ -111,11 +111,11 @@ public class SiloServer {
                 Person person = new Person(id, camera);
                 if (this._people.containsKey(id)) {
                     // Just add the observation
-                    this._people.get(id).add(person);
+                    this._people.get(id).addFirst(person);
                 } else {
                     // Create new entry in map
                     LinkedList<Observation> observations = new LinkedList<Observation>();
-                    observations.add(person);
+                    observations.addFirst(person);
                     this._people.put(id, observations);
                 }
                 break;
@@ -123,11 +123,11 @@ public class SiloServer {
                 Car car = new Car(id, camera);
                 if (this._cars.containsKey(id)) {
                     // Just add the observation
-                    this._cars.get(id).add(car);
+                    this._cars.get(id).addFirst(car);;
                 } else {
                     // Create new entry in map
                     LinkedList<Observation> observations = new LinkedList<Observation>();
-                    observations.add(car);
+                    observations.addFirst(car);
                     this._cars.put(id, observations);
                 }
                 break;

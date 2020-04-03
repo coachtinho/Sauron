@@ -74,6 +74,8 @@ public class SpotterApp {
 						spotter.exit();
 						return;
 					default:
+						// ignores rest of the line
+						scanner.nextLine();
 						System.out.println("Unsupported command: " + keyword);
 				}
 			}

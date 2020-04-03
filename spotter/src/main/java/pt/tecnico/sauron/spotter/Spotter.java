@@ -2,6 +2,7 @@ package pt.tecnico.sauron.spotter;
 
 import pt.tecnico.sauron.silo.client.SiloFrontend;
 import pt.tecnico.sauron.silo.grpc.Silo.ClearRequest;
+import pt.tecnico.sauron.silo.grpc.Silo.InitRequest;
 import pt.tecnico.sauron.silo.grpc.Silo.PingRequest;
 import pt.tecnico.sauron.silo.grpc.Silo.TraceRequest;
 import pt.tecnico.sauron.silo.grpc.Silo.TrackMatchRequest;
@@ -11,6 +12,9 @@ import pt.tecnico.sauron.silo.grpc.Silo.TrackResponse;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.List;
 
 import com.google.protobuf.Timestamp;
@@ -29,14 +33,29 @@ public class Spotter {
     public void spot(String type, String id) {
         try {
             if (id.contains("*")) {
-                //TODO:order list by id
                 TrackMatchRequest request = TrackMatchRequest.newBuilder().setType(type).setId(id).build();
-                List<TrackResponse> observations = frontend.trackMatch(request).getObservationList();
+                LinkedList<TrackResponse> observations = new LinkedList<TrackResponse>();
+                observations.addAll(frontend.trackMatch(request).getObservationList()); 
+                Collections.sort(observations, new Comparator<TrackResponse>() {
+                    @Override
+                    public int compare(TrackResponse t1, TrackResponse t2) {
+                        switch (t1.getType()) {
+                            case "person":
+                                return ((Long) Long.parseLong(t1.getId())).compareTo((Long) Long.parseLong(t2.getId()));                               
+                            case "car":
+                                return t1.getId().compareTo(t2.getId());  
+                            default:
+                                return 0;
+                        }
+                    }
+                });
                 observations.forEach((observation) -> printObservation(observation));
             } else {
                 TrackRequest request = TrackRequest.newBuilder().setType(type).setId(id).build();
                 TrackResponse response = frontend.track(request);
-                printObservation(response);
+                if (!response.getType().isBlank()) {
+                    printObservation(response);
+                } 
             }
         } catch (StatusRuntimeException exception) {
             handleException(exception);
@@ -47,15 +66,15 @@ public class Spotter {
         try {
             TraceRequest request = TraceRequest.newBuilder().setType(type).setId(id).build();
             List<TrackResponse> observations = frontend.trace(request).getObservationList();
+            System.out.println(observations.size());
             observations.forEach((observation) -> printObservation(observation));
         } catch (StatusRuntimeException exception) {
             handleException(exception);
         }
     }
 
-    //TODO: ver se esta null
     public void printObservation(TrackResponse observation) {
-        System.out.printf("%s,%s,%t,%s,%f,%f%n", observation.getType(), observation.getId(),  timeConverter(observation.getTimestamp()), 
+        System.out.printf("%s,%s,%s,%s,%f,%f%n", observation.getType(), observation.getId(),  timeConverter(observation.getTimestamp()).toString(), 
                 observation.getName(), observation.getLatitude(), observation.getLongitude());
     }
 
@@ -83,8 +102,13 @@ public class Spotter {
     }
 
     public void init() {
-        // TODO: implement
-        System.out.println("To be implemented");
+        try {
+            InitRequest request = InitRequest.newBuilder().build();
+            frontend.ctrlInit(request);
+            System.out.println("Server initialized");
+        } catch (StatusRuntimeException exception) {
+            handleException(exception);
+        }
     }
 
     public void help() {

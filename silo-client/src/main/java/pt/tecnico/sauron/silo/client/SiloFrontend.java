@@ -2,7 +2,6 @@ package pt.tecnico.sauron.silo.client;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import io.grpc.StatusRuntimeException;
 import pt.tecnico.sauron.silo.grpc.SauronGrpc;
 import pt.tecnico.sauron.silo.grpc.Silo.*;
 

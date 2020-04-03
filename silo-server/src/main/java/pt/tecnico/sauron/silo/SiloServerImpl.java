@@ -8,14 +8,12 @@ import io.grpc.stub.StreamObserver;
 import pt.tecnico.sauron.silo.domain.Camera;
 import pt.tecnico.sauron.silo.domain.SiloException;
 import pt.tecnico.sauron.silo.domain.SiloServer;
-import pt.tecnico.sauron.silo.grpc.Silo;
 import pt.tecnico.sauron.silo.grpc.Silo.*;
 import pt.tecnico.sauron.silo.grpc.Silo.ReportRequest.ReportItem;
 import pt.tecnico.sauron.silo.grpc.Silo.ReportResponse.FailureItem;
 import pt.tecnico.sauron.silo.grpc.SauronGrpc;
 import com.google.protobuf.Timestamp;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class SiloServerImpl extends SauronGrpc.SauronImplBase {

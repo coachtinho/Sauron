@@ -15,8 +15,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
 
-import javax.sound.midi.Track;
-
 import static io.grpc.Status.INVALID_ARGUMENT;
 import io.grpc.StatusRuntimeException;
 
@@ -58,6 +56,7 @@ public class TraceIT extends BaseIT {
         ReportRequest.Builder reportRequest2Builder = ReportRequest.newBuilder();
         reportRequest2Builder.setCameraName(camRequest2.getName());
         reportRequest2Builder.addReports(ReportItem.newBuilder().setType("person").setId("1111").build());
+        reportRequest2Builder.addReports(ReportItem.newBuilder().setType("person").setId("1111").build());
         reportRequest2Builder.addReports(ReportItem.newBuilder().setType("person").setId("1113").build());
         reportRequest2Builder.addReports(ReportItem.newBuilder().setType("person").setId("1114").build());
         reportRequest2Builder.addReports(ReportItem.newBuilder().setType("car").setId("AA1111").build());
@@ -87,7 +86,7 @@ public class TraceIT extends BaseIT {
         String reportId = "1111";
         TraceRequest request = TraceRequest.newBuilder().setType(reportType).setId(reportId).build();
         List<TrackResponse> observationList = frontend.trace(request).getObservationList();
-        assertEquals(2, observationList.size());
+        assertEquals(3, observationList.size());
         observationList.forEach((observation) -> {
             assertEquals(reportType, observation.getType());
             assertEquals(reportId, observation.getId());
@@ -96,7 +95,8 @@ public class TraceIT extends BaseIT {
             assertTrue(Long.toString(seconds), (seconds >= secondsNow - offset) && (seconds <= secondsNow + offset));
         });
         assertEquals(camRequest2.getName(), observationList.get(0).getName());
-        assertEquals(camRequest1.getName(), observationList.get(1).getName());
+        assertEquals(camRequest2.getName(), observationList.get(1).getName());
+        assertEquals(camRequest1.getName(), observationList.get(2).getName());
     }
 
     @Test
