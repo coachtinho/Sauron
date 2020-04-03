@@ -26,7 +26,7 @@ public class TrackIT extends BaseIT {
     private static ReportRequest reportRequest2; 
 
     @BeforeAll
-    public static void oneTimeSetUp() throws StatusRuntimeException {
+    public static void oneTimeSetUp() throws StatusRuntimeException, InterruptedException {
         host = testProps.getProperty("server.host");
         port = Integer.parseInt(testProps.getProperty("server.port"));
         offset = Integer.parseInt(testProps.getProperty("time.tolerance"));
@@ -48,10 +48,13 @@ public class TrackIT extends BaseIT {
         reportRequest1Builder.addReports(ReportItem.newBuilder().setType("car").setId("AA1112").build());
         reportRequest1 = reportRequest1Builder.build();
         frontend.report(reportRequest1);
+        Thread.sleep(1000);
         ReportRequest.Builder reportRequest2Builder = ReportRequest.newBuilder();
         reportRequest2Builder.setCameraName(camRequest2.getName());
+        reportRequest2Builder.addReports(ReportItem.newBuilder().setType("person").setId("1").build());
         reportRequest2Builder.addReports(ReportItem.newBuilder().setType("person").setId("3").build());
         reportRequest2Builder.addReports(ReportItem.newBuilder().setType("person").setId("4").build());
+        reportRequest2Builder.addReports(ReportItem.newBuilder().setType("car").setId("AA1111").build());
         reportRequest2Builder.addReports(ReportItem.newBuilder().setType("car").setId("AA1113").build());
         reportRequest2Builder.addReports(ReportItem.newBuilder().setType("car").setId("AA1114").build());   
         reportRequest2 = reportRequest2Builder.build();
@@ -74,8 +77,8 @@ public class TrackIT extends BaseIT {
 
     @Test
     public void trackPersonTest() {
-        String reportType = reportRequest1.getReports(0).getType();
-        String reportId = reportRequest1.getReports(0).getId();
+        String reportType = "person";
+        String reportId = "1";
         TrackRequest request = TrackRequest.newBuilder().setType(reportType).setId(reportId).build();
         TrackResponse response = frontend.track(request);
         assertEquals(reportId, response.getId());
@@ -83,15 +86,15 @@ public class TrackIT extends BaseIT {
         long seconds = response.getTimestamp().getSeconds();
         long secondsNow = System.currentTimeMillis() / 1000l;
         assertTrue(Long.toString(seconds), (seconds >= secondsNow - offset) && (seconds <= secondsNow + offset));
-        assertEquals(camRequest1.getName(), response.getName());
-        assertEquals(camRequest1.getLongitude(), response.getLongitude(), 0.000001);
-        assertEquals(camRequest1.getLatitude(), response.getLatitude(), 0.000001);
+        assertEquals(camRequest2.getName(), response.getName());
+        assertEquals(camRequest2.getLongitude(), response.getLongitude(), 0.000001);
+        assertEquals(camRequest2.getLatitude(), response.getLatitude(), 0.000001);
     }
 
     @Test
     public void trackCarTest() {
-        String reportType = reportRequest1.getReports(2).getType();
-        String reportId = reportRequest1.getReports(2).getId();
+        String reportType = "car";
+        String reportId = "AA1111";
         TrackRequest request = TrackRequest.newBuilder().setType(reportType).setId(reportId).build();
         TrackResponse response = frontend.track(request);
         assertEquals(reportId, response.getId());
@@ -99,9 +102,9 @@ public class TrackIT extends BaseIT {
         long seconds = response.getTimestamp().getSeconds();
         long secondsNow = System.currentTimeMillis() / 1000l;
         assertTrue(Long.toString(seconds), (seconds >= secondsNow - offset) && (seconds <= secondsNow + offset));
-        assertEquals(camRequest1.getName(), response.getName());
-        assertEquals(camRequest1.getLongitude(), response.getLongitude(), 0.000001);
-        assertEquals(camRequest1.getLongitude(), response.getLatitude(), 0.000001);
+        assertEquals(camRequest2.getName(), response.getName());
+        assertEquals(camRequest2.getLongitude(), response.getLongitude(), 0.000001);
+        assertEquals(camRequest2.getLongitude(), response.getLatitude(), 0.000001);
     }
 
     @Test

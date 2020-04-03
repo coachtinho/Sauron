@@ -29,7 +29,7 @@ public class TrackMatchIT extends BaseIT {
     private static ReportRequest reportRequest2; 
 
     @BeforeAll
-    public static void oneTimeSetUp() {
+    public static void oneTimeSetUp() throws StatusRuntimeException, InterruptedException {
         host = testProps.getProperty("server.host");
         port = Integer.parseInt(testProps.getProperty("server.port"));
         offset = Integer.parseInt(testProps.getProperty("time.tolerance"));
@@ -47,15 +47,19 @@ public class TrackMatchIT extends BaseIT {
         reportRequest1Builder.setCameraName(camRequest1.getName());
         reportRequest1Builder.addReports(ReportItem.newBuilder().setType("person").setId("1111").build());
         reportRequest1Builder.addReports(ReportItem.newBuilder().setType("person").setId("1112").build());
-        reportRequest1Builder.addReports(ReportItem.newBuilder().setType("car").setId("AA1111").build());
+        reportRequest1Builder.addReports(ReportItem.newBuilder().setType("car").setId("11AA11").build());
         reportRequest1Builder.addReports(ReportItem.newBuilder().setType("car").setId("BA1111").build());
         reportRequest1 = reportRequest1Builder.build();
         frontend.report(reportRequest1);
+        Thread.sleep(1000);
         ReportRequest.Builder reportRequest2Builder = ReportRequest.newBuilder();
         reportRequest2Builder.setCameraName(camRequest2.getName());
+        reportRequest2Builder.addReports(ReportItem.newBuilder().setType("person").setId("1111").build());
         reportRequest2Builder.addReports(ReportItem.newBuilder().setType("person").setId("2113").build());
         reportRequest2Builder.addReports(ReportItem.newBuilder().setType("person").setId("2114").build());
+        reportRequest2Builder.addReports(ReportItem.newBuilder().setType("car").setId("11AA11").build());
         reportRequest2Builder.addReports(ReportItem.newBuilder().setType("car").setId("AA1112").build());
+        reportRequest2Builder.addReports(ReportItem.newBuilder().setType("car").setId("BA1111").build());
         reportRequest2Builder.addReports(ReportItem.newBuilder().setType("car").setId("BA1112").build());   
         reportRequest2 = reportRequest2Builder.build();
         frontend.report(reportRequest2);
@@ -77,8 +81,8 @@ public class TrackMatchIT extends BaseIT {
 
     @Test
     public void trackMatchPerfectMatchPersonTest() {
-        String reportType = reportRequest1.getReports(0).getType();
-        String reportId = reportRequest1.getReports(0).getId();
+        String reportType = "person";
+        String reportId = "1111";
         TrackMatchRequest request = TrackMatchRequest.newBuilder().setType(reportType).setId(reportId).build();
         List<TrackResponse> observationList = frontend.trackMatch(request).getObservationList();
         assertEquals(1, observationList.size());
@@ -88,15 +92,15 @@ public class TrackMatchIT extends BaseIT {
         long seconds = trackResponse.getTimestamp().getSeconds();
         long secondsNow = System.currentTimeMillis() / 1000l;
         assertTrue(Long.toString(seconds), (seconds >= secondsNow - offset) && (seconds <= secondsNow + offset));
-        assertEquals(camRequest1.getName(), trackResponse.getName());
-        assertEquals(camRequest1.getLongitude(), trackResponse.getLongitude(), 0.000001);
-        assertEquals(camRequest1.getLatitude(), trackResponse.getLatitude(), 0.000001);
+        assertEquals(camRequest2.getName(), trackResponse.getName());
+        assertEquals(camRequest2.getLongitude(), trackResponse.getLongitude(), 0.000001);
+        assertEquals(camRequest2.getLatitude(), trackResponse.getLatitude(), 0.000001);
     }
 
     @Test
     public void trackMatchPerfectMatchCarTest() {
-        String reportType = reportRequest1.getReports(2).getType();
-        String reportId = reportRequest1.getReports(2).getId();
+        String reportType = "car";
+        String reportId = "11AA11";
         TrackMatchRequest request = TrackMatchRequest.newBuilder().setType(reportType).setId(reportId).build();
         List<TrackResponse> observationList = frontend.trackMatch(request).getObservationList();
         assertEquals(1, observationList.size());
@@ -106,39 +110,39 @@ public class TrackMatchIT extends BaseIT {
         long seconds = trackResponse.getTimestamp().getSeconds();
         long secondsNow = System.currentTimeMillis() / 1000l;
         assertTrue(Long.toString(seconds), (seconds >= secondsNow - offset) && (seconds <= secondsNow + offset));
-        assertEquals(camRequest1.getName(), trackResponse.getName());
-        assertEquals(camRequest1.getLongitude(), trackResponse.getLongitude(), 0.000001);
-        assertEquals(camRequest1.getLatitude(), trackResponse.getLatitude(), 0.000001);
+        assertEquals(camRequest2.getName(), trackResponse.getName());
+        assertEquals(camRequest2.getLongitude(), trackResponse.getLongitude(), 0.000001);
+        assertEquals(camRequest2.getLatitude(), trackResponse.getLatitude(), 0.000001);
     }
 
     @Test
     public void trackMatchStartsWithTest() {
-        String reportType = reportRequest1.getReports(2).getType();
-        TrackMatchRequest request = TrackMatchRequest.newBuilder().setType(reportType).setId("A*").build();
+        String reportType = "person";
+        TrackMatchRequest request = TrackMatchRequest.newBuilder().setType(reportType).setId("1*").build();
         TrackMatchResponse response = frontend.trackMatch(request);
         List<TrackResponse> trackResponses = response.getObservationList();
         assertEquals(2, trackResponses.size());
         trackResponses.forEach((trackResponse) -> {
-            assertTrue(trackResponse.getId(), trackResponse.getId().startsWith("A"));
+            assertTrue(trackResponse.getId(), trackResponse.getId().startsWith("1"));
             assertEquals(reportType, trackResponse.getType());
             long seconds = trackResponse.getTimestamp().getSeconds();
             long secondsNow = System.currentTimeMillis() / 1000l;
             assertTrue(Long.toString(seconds), (seconds >= secondsNow - offset) && (seconds <= secondsNow + offset));
             if (trackResponse.getId().endsWith("1")) {
-                assertEquals(camRequest1.getName(), trackResponse.getName());
-                assertEquals(camRequest1.getLongitude(), trackResponse.getLongitude(), 0.000001);
-                assertEquals(camRequest1.getLatitude(), trackResponse.getLatitude(), 0.000001);
-            } else {
                 assertEquals(camRequest2.getName(), trackResponse.getName());
                 assertEquals(camRequest2.getLongitude(), trackResponse.getLongitude(), 0.000001);
                 assertEquals(camRequest2.getLatitude(), trackResponse.getLatitude(), 0.000001);
+            } else {
+                assertEquals(camRequest1.getName(), trackResponse.getName());
+                assertEquals(camRequest1.getLongitude(), trackResponse.getLongitude(), 0.000001);
+                assertEquals(camRequest1.getLatitude(), trackResponse.getLatitude(), 0.000001);
             }
         });
     }
 
     @Test
     public void trackMatchEndsWithTest() {
-        String reportType = reportRequest1.getReports(2).getType();
+        String reportType = "car";
         TrackMatchRequest request = TrackMatchRequest.newBuilder().setType(reportType).setId("*1").build();
         TrackMatchResponse response = frontend.trackMatch(request);
         List<TrackResponse> trackResponses = response.getObservationList();
@@ -149,27 +153,27 @@ public class TrackMatchIT extends BaseIT {
             long seconds = trackResponse.getTimestamp().getSeconds();
             long secondsNow = System.currentTimeMillis() / 1000l;
             assertTrue(Long.toString(seconds), (seconds >= secondsNow - offset) && (seconds <= secondsNow + offset));
-            assertEquals(camRequest1.getName(), trackResponse.getName());
-            assertEquals(camRequest1.getLongitude(), trackResponse.getLongitude(), 0.000001);
-            assertEquals(camRequest1.getLatitude(), trackResponse.getLatitude(), 0.000001);
+            assertEquals(camRequest2.getName(), trackResponse.getName());
+            assertEquals(camRequest2.getLongitude(), trackResponse.getLongitude(), 0.000001);
+            assertEquals(camRequest2.getLatitude(), trackResponse.getLatitude(), 0.000001);
         });
     }
 
     @Test
     public void trackMatchStartWithEndsWithTest() {
-        String reportType = reportRequest1.getReports(2).getType();
-        TrackMatchRequest request = TrackMatchRequest.newBuilder().setType(reportType).setId("A*1").build();
+        String reportType = "car";
+        TrackMatchRequest request = TrackMatchRequest.newBuilder().setType(reportType).setId("B*1").build();
         List<TrackResponse> observationList = frontend.trackMatch(request).getObservationList();
         assertEquals(1, observationList.size());
         TrackResponse trackResponse = observationList.get(0);
-        assertTrue(trackResponse.getId(), trackResponse.getId().endsWith("1") && trackResponse.getId().startsWith("A"));
+        assertTrue(trackResponse.getId(), trackResponse.getId().endsWith("1") && trackResponse.getId().startsWith("B"));
         assertEquals(reportType, trackResponse.getType());
         long seconds = trackResponse.getTimestamp().getSeconds();
         long secondsNow = System.currentTimeMillis() / 1000l;
         assertTrue(Long.toString(seconds), (seconds >= secondsNow - offset) && (seconds <= secondsNow + offset));
-        assertEquals(camRequest1.getName(), trackResponse.getName());
-        assertEquals(camRequest1.getLongitude(), trackResponse.getLongitude(), 0.000001);
-        assertEquals(camRequest1.getLatitude(), trackResponse.getLatitude(), 0.000001);
+        assertEquals(camRequest2.getName(), trackResponse.getName());
+        assertEquals(camRequest2.getLongitude(), trackResponse.getLongitude(), 0.000001);
+        assertEquals(camRequest2.getLatitude(), trackResponse.getLatitude(), 0.000001);
     }
 
     @Test
