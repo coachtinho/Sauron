@@ -1,5 +1,6 @@
 package pt.tecnico.sauron.spotter;
 
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 public class SpotterApp {
@@ -79,6 +80,8 @@ public class SpotterApp {
 						System.out.println("Unsupported command: " + keyword);
 				}
 			}
+		} catch (NoSuchElementException e) {
+			spotter.exit();
 		}
 	}
 }
