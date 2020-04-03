@@ -9,8 +9,8 @@ import java.util.Map;
 
 public class SiloServer {
     private Map<String, Camera> _cameras;
-    private Map<String, LinkedList<Observation>> _cars;
-    private Map<String, LinkedList<Observation>> _people;
+    private Map<String, List<Observation>> _cars;
+    private Map<String, List<Observation>> _people;
 
     public SiloServer() {
         _cameras = Collections.synchronizedMap(new HashMap<>());
@@ -33,9 +33,9 @@ public class SiloServer {
 
     // Having a generic method for command allows for adding more types of
     // observations in the future
-    private Observation track(Map<String, LinkedList<Observation>> observations, String id) {
+    private Observation track(Map<String, List<Observation>> observations, String id) {
         if (observations.containsKey(id)) {
-            LinkedList<Observation> list = observations.get(id);
+            List<Observation> list = observations.get(id);
 
             // sorting is handled in insertion so the first element is always the most
             // recent
@@ -69,7 +69,7 @@ public class SiloServer {
 
     // Having a generic method for command allows for adding more types of
     // observations in the future
-    private List<Observation> trackMatch(Map<String, LinkedList<Observation>> observations, String expr) {
+    private List<Observation> trackMatch(Map<String, List<Observation>> observations, String expr) {
         List<Observation> list = new LinkedList<>();
 
         if (!expr.contains("*")) {
@@ -110,11 +110,11 @@ public class SiloServer {
                 Person person = new Person(id, camera);
                 if (this._people.containsKey(id)) {
                     // Just add the observation
-                    this._people.get(id).addFirst(person);
+                    this._people.get(id).add(0, person);
                 } else {
                     // Create new entry in map
-                    LinkedList<Observation> observations = new LinkedList<Observation>();
-                    observations.addFirst(person);
+                    List<Observation> observations = Collections.synchronizedList(new LinkedList<Observation>());
+                    observations.add(0, person);
                     this._people.put(id, observations);
                 }
                 break;
@@ -122,11 +122,11 @@ public class SiloServer {
                 Car car = new Car(id, camera);
                 if (this._cars.containsKey(id)) {
                     // Just add the observation
-                    this._cars.get(id).addFirst(car);;
+                    this._cars.get(id).add(0, car);;
                 } else {
                     // Create new entry in map
-                    LinkedList<Observation> observations = new LinkedList<Observation>();
-                    observations.addFirst(car);
+                    List<Observation> observations = Collections.synchronizedList(new LinkedList<Observation>());
+                    observations.add(0, car);
                     this._cars.put(id, observations);
                 }
                 break;
@@ -153,19 +153,19 @@ public class SiloServer {
         this._cameras = _cameras;
     }
 
-    public Map<String, LinkedList<Observation>> getCars() {
+    public Map<String, List<Observation>> getCars() {
         return this._cars;
     }
 
-    public void setCars(Map<String, LinkedList<Observation>> _cars) {
+    public void setCars(Map<String, List<Observation>> _cars) {
         this._cars = _cars;
     }
 
-    public Map<String, LinkedList<Observation>> getPeople() {
+    public Map<String, List<Observation>> getPeople() {
         return this._people;
     }
 
-    public void setPeople(Map<String, LinkedList<Observation>> _people) {
+    public void setPeople(Map<String, List<Observation>> _people) {
         this._people = _people;
     }
 
