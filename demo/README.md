@@ -58,10 +58,6 @@ Sucessfully reported 6 items
 Exiting...
 ```
 
-CAM_NAME = camera name \
- LONGITUDE = longitude \
- LATITUDE = latitude
-
 ## Step 3: Run spotter
 
 ```
