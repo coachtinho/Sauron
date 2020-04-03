@@ -94,8 +94,7 @@ public class SiloServer {
 
         return list;
     }
-
-    // TODO: Create custom exception
+    
     public boolean registerCamera(String name, double longitude, double latitude) {
         if (_cameras.containsKey(name))
             throw new SiloException(ErrorMessage.CAMERA_ALREADY_EXISTS);
