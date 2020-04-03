@@ -38,14 +38,19 @@ public class Eye {
         else if (id == null) // Check if id exists
             System.out.println("Id must be specified");
 
+        boolean validID = false;
         switch (type) {
             case "car":
                 if (!id.matches("[A-Z0-9]{6}"))
                     System.out.println("Id " + id + " is illegal for type car");
+                else
+                    validID = true;
                 break;
             case "person":
                 if (!id.matches("[0-9]+"))
                     System.out.println("Id " + id + " is illegal for type person");
+                else
+                    validID = true;
                 break;
             default:
                 System.out.println("Type not recognized");
@@ -53,8 +58,10 @@ public class Eye {
         }
 
         // Add item to list
-        final Item item = new Item(type, id);
-        _reports.add(item);
+        if (validID) {
+            final Item item = new Item(type, id);
+            _reports.add(item);
+        }
     }
 
     public void sendReport() {
@@ -64,6 +71,7 @@ public class Eye {
 
         // Create report message
         final ReportRequest.Builder requestBuilder = ReportRequest.newBuilder();
+        requestBuilder.setCameraName(_name);
         for (final Item item : _reports) {
             final ReportItem report = ReportItem.newBuilder() //
                     .setId(item.getId()) //
