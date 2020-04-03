@@ -94,11 +94,11 @@ public class SiloServer {
 
         return list;
     }
-    
-    public boolean registerCamera(String name, double longitude, double latitude) {
+
+    public boolean registerCamera(String name, double latitude, double longitude) {
         if (_cameras.containsKey(name))
             throw new SiloException(ErrorMessage.CAMERA_ALREADY_EXISTS);
-        _cameras.put(name, new Camera(name, longitude, latitude));
+        _cameras.put(name, new Camera(name, latitude, longitude));
         return true;
     }
 
@@ -121,7 +121,8 @@ public class SiloServer {
                 Car car = new Car(id, camera);
                 if (this._cars.containsKey(id)) {
                     // Just add the observation
-                    this._cars.get(id).add(0, car);;
+                    this._cars.get(id).add(0, car);
+                    ;
                 } else {
                     // Create new entry in map
                     List<Observation> observations = Collections.synchronizedList(new LinkedList<Observation>());

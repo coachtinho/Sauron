@@ -6,10 +6,10 @@ public class Camera {
     double _longitude;
     String _name;
 
-    public Camera(String name, double longitude, double latitude) {
+    public Camera(String name, double latitude, double longitude) {
         _name = name;
-        _longitude = longitude;
         _latitude = latitude;
+        _longitude = longitude;        
     }
 
     public String getName() {

@@ -213,7 +213,7 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
             responseObserver.onError(INVALID_ARGUMENT.withDescription("Name length is illegal!").asRuntimeException());
         else {
             try {
-                siloServer.registerCamera(name, request.getLongitude(), request.getLatitude());
+                siloServer.registerCamera(name, request.getLatitude(), request.getLongitude());
                 final CameraRegistrationResponse response = CameraRegistrationResponse.newBuilder().build();
                 responseObserver.onNext(response);
                 responseObserver.onCompleted();
