@@ -66,7 +66,6 @@ public class Spotter {
         try {
             TraceRequest request = TraceRequest.newBuilder().setType(type).setId(id).build();
             List<TrackResponse> observations = frontend.trace(request).getObservationList();
-            System.out.println(observations.size());
             observations.forEach((observation) -> printObservation(observation));
         } catch (StatusRuntimeException exception) {
             handleException(exception);
