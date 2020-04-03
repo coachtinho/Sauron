@@ -27,7 +27,7 @@ public class SiloServer {
 
     public Observation trackCar(String id) {
         if (!Car.isValidId(id))
-            throw new SiloException(ErrorMessage.INAVLID_CAR_ID);
+            throw new SiloException(ErrorMessage.INVALID_CAR_ID);
         return track(_cars, id);
     }
 
@@ -54,7 +54,7 @@ public class SiloServer {
 
     public List<Observation> traceCar(String id) {
         if (!Car.isValidId(id))
-            throw new SiloException(ErrorMessage.INAVLID_CAR_ID);
+            throw new SiloException(ErrorMessage.INVALID_CAR_ID);
         return _cars.get(id);
     }
 

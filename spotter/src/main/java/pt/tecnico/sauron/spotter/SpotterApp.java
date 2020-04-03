@@ -45,7 +45,7 @@ public class SpotterApp {
 						line = scanner.nextLine();
 						if (line.matches(" [a-z]+ [a-zA-Z0-9]+")) {
 							arguments = line.split(" ");
-							spotter.spot(arguments[1], arguments[2]);
+							spotter.trail(arguments[1], arguments[2]);
 						} else {
 							System.out.println("Invalid arguments");
 						}
