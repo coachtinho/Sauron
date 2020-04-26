@@ -21,13 +21,14 @@ import com.google.protobuf.Timestamp;
 
 import io.grpc.StatusRuntimeException;
 import io.grpc.Status.Code;
+import pt.ulisboa.tecnico.sdis.zk.ZKNamingException;
 
 public class Spotter {
 
     SiloFrontend frontend;
 
-    public Spotter(String host, int port) {
-        frontend = new SiloFrontend(host, port);
+    public Spotter(String host, String port, int instance) throws ZKNamingException {
+        frontend = new SiloFrontend(host, port, instance);
     }
 
     public void spot(String type, String id) {

@@ -2,10 +2,12 @@ package pt.tecnico.sauron.spotter;
 
 import java.util.NoSuchElementException;
 import java.util.Scanner;
+import pt.ulisboa.tecnico.sdis.zk.ZKNamingException;
+
 
 public class SpotterApp {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws ZKNamingException {
 
 		System.out.println(SpotterApp.class.getSimpleName());
 
@@ -23,7 +25,7 @@ public class SpotterApp {
 			System.out.printf("arg[%d] = %s%n", i, args[i]);
 		}
 
-		Spotter spotter = new Spotter(args[0], Integer.parseInt(args[1]));
+		Spotter spotter = new Spotter(args[0], args[1], Integer.parseInt(args[2]));
 		String[] arguments;
 		String keyword, line;
 

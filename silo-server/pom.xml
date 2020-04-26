@@ -1,8 +1,7 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	
+
 	<parent>
 		<groupId>pt.tecnico.sauron.A36</groupId>
 		<artifactId>Sauron</artifactId>
@@ -15,12 +14,27 @@
 
 	<properties>
 		<!-- see parent POM for more properties -->
+		<zoo.host>localhost</zoo.host>
+		<zoo.port>2181</zoo.port>
+
+		<!-- instance number -->
+		<instance>1</instance>
+
+		<server.host>localhost</server.host>
+		<server.port>808${instance}</server.port>
+		<server.path>/grpc/sauron/silo/${instance}</server.path>
 
 		<mainclass>pt.tecnico.sauron.silo.SiloServerApp</mainclass>
-		<server.port>8080</server.port>
 	</properties>
 
 	<dependencies>
+		<!-- ZK Naming -->
+		<dependency>
+			<groupId>pt.ulisboa.tecnico.sdis</groupId>
+			<artifactId>zk-naming</artifactId>
+			<version>1.0.3</version>
+		</dependency>
+		
 		<!-- contract brings gRPC dependencies with it -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
@@ -67,6 +81,10 @@
 				<configuration>
 					<mainClass>${mainclass}</mainClass>
 					<arguments>
+						<argument>${zoo.host}</argument>
+						<argument>${zoo.port}</argument>
+						<argument>${instance}</argument>
+						<argument>${server.host}</argument>
 						<argument>${server.port}</argument>
 					</arguments>
 				</configuration>

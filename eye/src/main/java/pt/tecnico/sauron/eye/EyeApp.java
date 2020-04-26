@@ -5,10 +5,12 @@ import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 import io.grpc.StatusRuntimeException;
+import pt.ulisboa.tecnico.sdis.zk.ZKNamingException;
+
 
 public class EyeApp {
 
-	public static void main(final String[] args) {
+	public static void main(final String[] args) throws ZKNamingException {
 
 		System.out.println(EyeApp.class.getSimpleName());
 
@@ -26,14 +28,16 @@ public class EyeApp {
 			System.out.printf("arg[%d] = %s%n", i, args[i]);
 		}
 
-		final Eye eye = new Eye(args[0], Integer.parseInt(args[1]), //
+		System.out.println("creating eye'");
+		final Eye eye = new Eye(args[0], args[1], //
 				args[2], // camera name
 				Double.parseDouble(args[3]), // latitude
-				Double.parseDouble(args[4])); // longitude
+				Double.parseDouble(args[4]), // longitude
+				Integer.parseInt(args[5])); // instance
 
 		String[] input;
 		String line;
-
+		System.out.println("Scanning shit'");
 		// Main cycle
 		try (Scanner scanner = new Scanner(System.in)) {
 			while (true) {
@@ -44,7 +48,7 @@ public class EyeApp {
 					eye.exit();
 					break;
 				}
-				
+
 				if (line.matches("^#.*")) // ignore comment
 					continue;
 				else if (line.isEmpty()) { // handle empty lines

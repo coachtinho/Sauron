@@ -4,6 +4,9 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import pt.tecnico.sauron.silo.grpc.SauronGrpc;
 import pt.tecnico.sauron.silo.grpc.Silo.*;
+import pt.ulisboa.tecnico.sdis.zk.ZKNaming;
+import pt.ulisboa.tecnico.sdis.zk.ZKRecord;
+import pt.ulisboa.tecnico.sdis.zk.ZKNamingException;
 
 public class SiloFrontend {
 
@@ -11,10 +14,14 @@ public class SiloFrontend {
 
     SauronGrpc.SauronBlockingStub stub;
 
-    public SiloFrontend(final String host, final int port) {
+    public SiloFrontend(final String host, final String port, final int instance) throws ZKNamingException {
         System.out.println(host + ":" + port);
-        final String target = host + ":" + port;
+        ZKNaming zkNaming = new ZKNaming(host, port);
+        final String path = "/grpc/sauron/silo/" + instance;
 
+        ZKRecord record = zkNaming.lookup(path);
+        String target = record.getURI();
+        
         channel = ManagedChannelBuilder.forTarget(target).usePlaintext().build();
         stub = SauronGrpc.newBlockingStub(channel);
     }

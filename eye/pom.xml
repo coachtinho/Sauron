@@ -15,8 +15,9 @@
 
 	<properties>
 		<!-- see parent POM for more properties -->
-		<server.host>localhost</server.host>
-		<server.port>8080</server.port>
+		<zoo.host>localhost</zoo.host>
+		<zoo.port>2181</zoo.port>
+		<instance>1</instance>
 		<name>localhost</name>
 		<camera.name>Alameda</camera.name>
 		<camera.longitude>-25.284736</camera.longitude>
@@ -70,11 +71,12 @@
 				<configuration>
 					<mainClass>${mainclass}</mainClass>
 					<arguments>
-						<argument>${server.host}</argument>
-						<argument>${server.port}</argument>
+						<argument>${zoo.host}</argument>
+						<argument>${zoo.port}</argument>
 						<argument>${camera.name}</argument>
 						<argument>${camera.longitude}</argument>
-						<argument>${camera.latitude}</argument>						
+						<argument>${camera.latitude}</argument>
+						<argument>${instance}</argument>						
 					</arguments>
 				</configuration>
 			</plugin>

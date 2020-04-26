@@ -7,12 +7,14 @@ import pt.tecnico.sauron.silo.grpc.Silo.ReportRequest;
 import pt.tecnico.sauron.silo.grpc.Silo.ReportResponse;
 import pt.tecnico.sauron.silo.grpc.Silo.ReportRequest.ReportItem;
 import pt.tecnico.sauron.silo.grpc.Silo.ReportResponse.FailureItem;
+import pt.ulisboa.tecnico.sdis.zk.ZKNamingException;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import io.grpc.StatusRuntimeException;
 import io.grpc.Status.Code;
+
 
 public class Eye {
 
@@ -21,13 +23,17 @@ public class Eye {
     String _name;
     double _latitude;
     double _longitude;
+    int _instance;
 
-    public Eye(final String host, final int port, final String name, final double latitude, final double longitude) {
+    public Eye(final String host, final String port, final String name, final double latitude, final double longitude, final int instance) throws ZKNamingException {
         _name = name;
         _latitude = latitude;
         _longitude = longitude;
-        _frontend = new SiloFrontend(host, port);
+        System.out.println("creating frontend");
+        _frontend = new SiloFrontend(host, port, instance);
+        System.out.println("created frontend frontend");
         _reports = new ArrayList<>();
+        _instance = instance;
         register();
     }
 

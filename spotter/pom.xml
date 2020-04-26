@@ -1,8 +1,7 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	
+
 	<parent>
 		<groupId>pt.tecnico.sauron.A36</groupId>
 		<artifactId>Sauron</artifactId>
@@ -15,8 +14,9 @@
 
 	<properties>
 		<!-- see parent POM for more properties -->
-		<server.host>localhost</server.host>
-		<server.port>8080</server.port>
+		<zoo.host>localhost</zoo.host>
+		<zoo.port>2181</zoo.port>
+		<instance>1</instance>
 		<mainclass>pt.tecnico.sauron.spotter.SpotterApp</mainclass>
 	</properties>
 
@@ -66,8 +66,9 @@
 				<configuration>
 					<mainClass>${mainclass}</mainClass>
 					<arguments>
-						<argument>${server.host}</argument>
-						<argument>${server.port}</argument>
+						<argument>${zoo.host}</argument>
+						<argument>${zoo.port}</argument>
+						<argument>${instance}</argument>
 					</arguments>
 				</configuration>
 			</plugin>
