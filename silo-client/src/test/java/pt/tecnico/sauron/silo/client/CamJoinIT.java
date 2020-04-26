@@ -12,17 +12,20 @@ import pt.tecnico.sauron.silo.grpc.Silo.CameraRegistrationRequest;
 import pt.tecnico.sauron.silo.grpc.Silo.CameraRegistrationResponse;
 import pt.tecnico.sauron.silo.grpc.Silo.ClearRequest;
 import pt.tecnico.sauron.silo.grpc.Silo.InitRequest;
+import pt.ulisboa.tecnico.sdis.zk.ZKNamingException;
+
 
 public class CamJoinIT extends BaseIT {
     // static members
-    private static final String host = testProps.getProperty("server.host");
-    private static final int port = Integer.parseInt(testProps.getProperty("server.port"));
+    private static final String host = testProps.getProperty("zoo.host");
+    private static final String port = testProps.getProperty("zoo.port");
+    private static final int instance = 1;
     private static SiloFrontend frontend;
 
     // one-time initialization and clean-up
     @BeforeAll
-    public static void oneTimeSetUp() {
-        frontend = new SiloFrontend(host, port);
+    public static void oneTimeSetUp() throws ZKNamingException {
+        frontend = new SiloFrontend(host, port, instance);
     }
 
     @AfterAll

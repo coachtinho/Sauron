@@ -17,11 +17,15 @@ import pt.tecnico.sauron.silo.grpc.Silo.ReportRequest.ReportItem;
 
 import static io.grpc.Status.INVALID_ARGUMENT;
 import io.grpc.StatusRuntimeException;
+//import jdk.javadoc.internal.doclets.formats.html.resources.standard;
+import pt.ulisboa.tecnico.sdis.zk.ZKNamingException;
+
 
 public class TrackMatchIT extends BaseIT {
     private static SiloFrontend frontend;
-    private static int port;
+    private static String port;
     private static String host;
+    private static int instance;
     private static int offset;
     private static CameraRegistrationRequest camRequest1;
     private static CameraRegistrationRequest camRequest2;
@@ -29,11 +33,12 @@ public class TrackMatchIT extends BaseIT {
     private static ReportRequest reportRequest2; 
 
     @BeforeAll
-    public static void oneTimeSetUp() throws StatusRuntimeException, InterruptedException {
-        host = testProps.getProperty("server.host");
-        port = Integer.parseInt(testProps.getProperty("server.port"));
+    public static void oneTimeSetUp() throws StatusRuntimeException, InterruptedException, ZKNamingException {
+        host = testProps.getProperty("zoo.host");
+        port = testProps.getProperty("zoo.port");
+        instance = 1;
         offset = Integer.parseInt(testProps.getProperty("time.tolerance"));
-        frontend = new SiloFrontend(host, port);
+        frontend = new SiloFrontend(host, port, instance);
         
         // Setting up the server
         // Cameras
