@@ -3,6 +3,7 @@ package pt.tecnico.sauron.silo;
 import io.grpc.BindableService;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
+import java.util.Scanner;
 import pt.ulisboa.tecnico.sdis.zk.ZKNaming;
 import pt.ulisboa.tecnico.sdis.zk.ZKNamingException;
 
@@ -27,7 +28,7 @@ public class SiloServerApp {
         final Integer serverPort = Integer.parseInt(args[4]);
 
         final String path = "/grpc/sauron/silo/" + instance;
-        final BindableService impl = new SiloServerImpl();
+        final BindableService impl = new SiloServerImpl(instance);
 
         // Create a new server to listen on port
         Server server = ServerBuilder.forPort(serverPort).addService(impl).build();
@@ -44,10 +45,19 @@ public class SiloServerApp {
             // Server threads are running in the background.
             System.out.println("Server started");
 
+            // Create new thread where we wait for the user input
+            new Thread(() -> {
+                System.out.println("<Press enter to shutdown>");
+                new Scanner(System.in).nextLine();
+
+                server.shutdownNow();
+            }).start();
+
             // Do not exit the main thread. Wait until server is terminated.
             server.awaitTermination();
+            System.out.println("Server stopped");
         } finally {
-            System.out.println("zoo unbinding");
+            System.out.println("Unbinding zoo node");
             if (zkNaming != null) {
                 // remove
                 zkNaming.unbind(path, serverHost, serverPort.toString());

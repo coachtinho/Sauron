@@ -3,6 +3,8 @@ package pt.tecnico.sauron.silo;
 import static io.grpc.Status.INVALID_ARGUMENT;
 import static io.grpc.Status.ALREADY_EXISTS;
 
+import java.util.Vector;
+
 import pt.tecnico.sauron.silo.domain.Observation;
 import io.grpc.stub.StreamObserver;
 import pt.tecnico.sauron.silo.domain.Camera;
@@ -18,7 +20,33 @@ import java.util.List;
 
 public class SiloServerImpl extends SauronGrpc.SauronImplBase {
 
-    private final SiloServer siloServer = new SiloServer();
+    private final SiloServer siloServer;
+    private final int _instance;
+    private Vector<Integer> _valueTS;
+
+    public SiloServerImpl(int instance) {
+        siloServer = new SiloServer();
+        _instance = instance;
+        _valueTS = new Vector<Integer>(_instance); // valueTS starts big enough to include own instance
+    }
+
+    public boolean canUpdate(Vector<Integer> otherTS) {
+        // Ensure both vectors have same size
+        if (_valueTS.size() > otherTS.size())
+            otherTS.setSize(_valueTS.size());
+        else if (_valueTS.size() < otherTS.size())
+            _valueTS.setSize(otherTS.size());
+
+        for (int i = 0; i < _valueTS.size(); i++) {
+            // Initiate null values at 0
+            if (_valueTS.get(i) == null) _valueTS.setElementAt(0, i);
+            if (otherTS.get(i) == null) otherTS.setElementAt(0, i);
+
+            if (otherTS.get(i) > _valueTS.get(i)) return false;
+        }
+            
+        return true;
+    }
 
     @Override
     public void ctrlPing(final PingRequest request, final StreamObserver<PingResponse> responseObserver) {
