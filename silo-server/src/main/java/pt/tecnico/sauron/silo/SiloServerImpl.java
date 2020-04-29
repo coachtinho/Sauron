@@ -7,6 +7,7 @@ import java.util.Vector;
 import java.util.List;
 
 import pt.tecnico.sauron.silo.domain.Observation;
+import pt.tecnico.sauron.silo.domain.ReplicaManager;
 import io.grpc.stub.StreamObserver;
 import pt.tecnico.sauron.silo.domain.Camera;
 import pt.tecnico.sauron.silo.domain.SiloException;
@@ -17,57 +18,15 @@ import pt.tecnico.sauron.silo.grpc.Silo.ReportResponse.FailureItem;
 import pt.tecnico.sauron.silo.grpc.SauronGrpc;
 import com.google.protobuf.Timestamp;
 
-
 public class SiloServerImpl extends SauronGrpc.SauronImplBase {
 
     private final SiloServer siloServer;
-    private final int _instance;
     private Vector<Integer> _valueTS;
+    private final ReplicaManager _replicaManager;
 
     public SiloServerImpl(int instance) {
         siloServer = new SiloServer();
-        _instance = instance;
-        _valueTS = new Vector<Integer>();
-        for (int i = 0; i < _instance; i++) _valueTS.add(0); // valueTS starts big enough to include own instance
-    }
-
-    private Vector<Integer> generateOtherTS(List<Integer> tsList) {
-        // Get client's valueTS from list
-        Vector<Integer> otherTS = new Vector<Integer>();
-
-        for (int ts : tsList)
-            otherTS.add(ts);
-
-        // Ensure both vectors have same size
-        if (_valueTS.size() > otherTS.size())
-            for (int i = otherTS.size(); i < _valueTS.size(); i++)
-                otherTS.add(0);
-        else if (_valueTS.size() < otherTS.size())
-            for (int i = _valueTS.size(); i < otherTS.size(); i++)
-                _valueTS.add(0);
-
-        return otherTS;
-    }
-
-    private boolean canUpdate(Vector<Integer> otherTS) {
-
-        for (int i = 0; i < _valueTS.size(); i++)
-            if (otherTS.get(i) > _valueTS.get(i)) return false;
-            
-        return true;
-    }
-
-    private Vector<Integer> updateTS(Vector<Integer> otherTS) {
-        // Merges ts and increments replica's own value
-        Vector<Integer> newTS = new Vector<Integer>();
-        
-        for (int i = 0; i < _valueTS.size(); i++)
-            newTS.add(Math.max(_valueTS.get(i), otherTS.get(i)));
-
-        int ts = newTS.get(_instance - 1) + 1;
-        newTS.setElementAt(ts, _instance - 1);
-
-        return newTS;
+        _replicaManager = new ReplicaManager(instance);
     }
 
     @Override
@@ -108,7 +67,7 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
         final String type = request.getType();
         final String id = request.getId();
         Observation obs;
-        Vector<Integer> otherTS = generateOtherTS(request.getTsList());
+        Vector<Integer> otherTS = _replicaManager.generateOtherTS(request.getTsList());
 
         if (type.isBlank()) {
             responseObserver.onError(INVALID_ARGUMENT.withDescription("Type cannot be empty!").asRuntimeException());
@@ -134,8 +93,8 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
         }
 
         TrackResponse.Builder responseBuilder = TrackResponse.newBuilder();
-                
-        _valueTS = updateTS(otherTS);
+
+        _valueTS = _replicaManager.update(otherTS);
         for (int ts : _valueTS)
             responseBuilder.addTs(ts);
 
@@ -159,7 +118,7 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
         final String type = request.getType();
         final String id = request.getId();
         List<Observation> observations;
-        Vector<Integer> otherTS = generateOtherTS(request.getTsList());
+        Vector<Integer> otherTS = _replicaManager.generateOtherTS(request.getTsList());
 
         if (type.isBlank()) {
             responseObserver.onError(INVALID_ARGUMENT.withDescription("Type cannot be empty!").asRuntimeException());
@@ -185,8 +144,8 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
         }
 
         TraceResponse.Builder responseBuilder = TraceResponse.newBuilder();
-                
-        _valueTS = updateTS(otherTS);
+
+        _valueTS = _replicaManager.update(otherTS);
         for (int ts : _valueTS)
             responseBuilder.addTs(ts);
 
@@ -216,7 +175,7 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
         final String type = request.getType();
         final String id = request.getId();
         List<Observation> observations;
-        Vector<Integer> otherTS = generateOtherTS(request.getTsList());
+        Vector<Integer> otherTS = _replicaManager.generateOtherTS(request.getTsList());
 
         if (type.isBlank()) {
             responseObserver.onError(INVALID_ARGUMENT.withDescription("Type cannot be empty!").asRuntimeException());
@@ -242,8 +201,8 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
         }
 
         TrackMatchResponse.Builder responseBuilder = TrackMatchResponse.newBuilder();
-                
-        _valueTS = updateTS(otherTS);
+
+        _valueTS = _replicaManager.update(otherTS);
         for (int ts : _valueTS)
             responseBuilder.addTs(ts);
 
@@ -273,13 +232,13 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
             final StreamObserver<CameraRegistrationResponse> responseObserver) {
 
         String name = request.getName();
-        Vector<Integer> otherTS = generateOtherTS(request.getTsList());
+        Vector<Integer> otherTS = _replicaManager.generateOtherTS(request.getTsList());
 
         if (name.isBlank()) // Check name exists
             responseObserver.onError(INVALID_ARGUMENT.withDescription("Name cannot be empty!").asRuntimeException());
         else if (name.length() > 15 || name.length() < 3) // Check name size
             responseObserver.onError(INVALID_ARGUMENT.withDescription("Name length is illegal!").asRuntimeException());
-        else if (!canUpdate(otherTS)) {
+        else if (!_replicaManager.canUpdate(otherTS)) {
             CameraRegistrationResponse.Builder responseBuilder = CameraRegistrationResponse.newBuilder();
 
             for (int ts : _valueTS)
@@ -291,10 +250,10 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
         } else {
             try {
                 siloServer.registerCamera(name, request.getLatitude(), request.getLongitude());
-                
+
                 CameraRegistrationResponse.Builder responseBuilder = CameraRegistrationResponse.newBuilder();
-                
-                _valueTS = updateTS(otherTS);
+
+                _valueTS = _replicaManager.update(otherTS);
                 for (int ts : _valueTS)
                     responseBuilder.addTs(ts);
 
@@ -312,7 +271,7 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
     public void camInfo(final CameraInfoRequest request, final StreamObserver<CameraInfoResponse> responseObserver) {
         String name = request.getName();
         Camera cam;
-        Vector<Integer> otherTS = generateOtherTS(request.getTsList());
+        Vector<Integer> otherTS = _replicaManager.generateOtherTS(request.getTsList());
 
         if (name.isBlank()) // Check name exists
             responseObserver.onError(INVALID_ARGUMENT.withDescription("Name cannot be empty!").asRuntimeException());
@@ -323,8 +282,8 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
             double longitude = cam.getLongitude();
 
             CameraInfoResponse.Builder responseBuilder = CameraInfoResponse.newBuilder();
-                
-            _valueTS = updateTS(otherTS);
+
+            _valueTS = _replicaManager.update(otherTS);
             for (int ts : _valueTS)
                 responseBuilder.addTs(ts);
 
@@ -340,14 +299,14 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
     @Override
     public void report(final ReportRequest request, final StreamObserver<ReportResponse> responseObserver) {
         String cameraName = request.getCameraName();
-        Vector<Integer> otherTS = generateOtherTS(request.getTsList());
-        
+        Vector<Integer> otherTS = _replicaManager.generateOtherTS(request.getTsList());
+
         if (!siloServer.hasCamera(cameraName)) {
             responseObserver.onError(INVALID_ARGUMENT.withDescription("No such camera").asRuntimeException());
-        } else if (!canUpdate(otherTS)) {
+        } else if (!_replicaManager.canUpdate(otherTS)) {
             ReportResponse.Builder responseBuilder = ReportResponse.newBuilder();
 
-            _valueTS = updateTS(otherTS);
+            _valueTS = _replicaManager.update(otherTS);
             for (int ts : _valueTS)
                 responseBuilder.addTs(ts);
 
@@ -358,7 +317,7 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
             List<ReportItem> items = request.getReportsList();
             ReportResponse.Builder responseBuilder = ReportResponse.newBuilder();
 
-            _valueTS = updateTS(otherTS);
+            _valueTS = _replicaManager.update(otherTS);
             for (int ts : _valueTS)
                 responseBuilder.addTs(ts);
 
