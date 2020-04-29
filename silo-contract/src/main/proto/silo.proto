@@ -32,6 +32,7 @@ message ReportRequest {
     }
     string cameraName = 1;
     repeated ReportItem reports = 2;
+    repeated int32 ts = 3;
 }
 
 message ReportResponse {
@@ -41,11 +42,13 @@ message ReportResponse {
         string message = 3;
     }
     repeated FailureItem failures = 1;
+    repeated int32 ts = 2;
 }
 
 message TrackRequest {
     string type = 1;
     string id = 2;
+    repeated int32 ts = 3;
 }
 
 message TrackResponse {
@@ -55,42 +58,51 @@ message TrackResponse {
     string name = 4;
     double latitude = 5;
     double longitude = 6;
+    repeated int32 ts = 7;
 }
 
 message TrackMatchRequest {
     string type = 1;
     string id = 2;
+    repeated int32 ts = 3;
 }
 
 message TrackMatchResponse {
     repeated TrackResponse observation = 1;
+    repeated int32 ts = 2;
 }
 
 message TraceRequest {
     string type = 1;
     string id = 2;
+    repeated int32 ts = 3;
 }
 
 message TraceResponse {
     repeated TrackResponse observation = 1;
+    repeated int32 ts = 2;
 }
 
 message CameraRegistrationRequest {    
     string name = 1;
     double latitude = 2; // assure precision to 6 decimal cases (float barely reaches 5 at 128-256 range)
     double longitude = 3;
+    repeated int32 ts = 4;
 }
 
 message CameraRegistrationResponse {
+    repeated int32 ts = 1;
 }
 
 message CameraInfoRequest {
-    string name = 1;    
+    string name = 1;  
+    repeated int32 ts = 2;  
 }
 
 message CameraInfoResponse {
     double latitude = 1;
     double longitude = 2;
+    repeated int32 ts = 3
 }
 
 // service
