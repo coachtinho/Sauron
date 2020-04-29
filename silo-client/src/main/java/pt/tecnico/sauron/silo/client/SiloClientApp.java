@@ -2,11 +2,10 @@ package pt.tecnico.sauron.silo.client;
 
 import io.grpc.StatusRuntimeException;
 import pt.tecnico.sauron.silo.grpc.Silo.CameraRegistrationRequest;
-import pt.ulisboa.tecnico.sdis.zk.ZKNamingException;
 
 public class SiloClientApp {
 
-    public static void main(String[] args) throws ZKNamingException {
+    public static void main(String[] args) throws SiloFrontendException {
         System.out.println(SiloClientApp.class.getSimpleName());
 
         // receive and print arguments
@@ -18,7 +17,7 @@ public class SiloClientApp {
         String host = "localhost";
         Integer port = 8080;
 
-        SiloFrontend frontend = new SiloFrontend(host, port.toString(), 1);
+        SiloFrontend frontend = new SiloFrontend(host, port.toString(), "1");
 
         try {
             CameraRegistrationRequest request = CameraRegistrationRequest.newBuilder().setLatitude(12.3)

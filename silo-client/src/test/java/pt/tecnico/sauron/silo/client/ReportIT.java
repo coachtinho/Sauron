@@ -14,12 +14,10 @@ import io.grpc.StatusRuntimeException;
 import static io.grpc.Status.INVALID_ARGUMENT;
 import pt.tecnico.sauron.silo.grpc.Silo.CameraRegistrationRequest;
 import pt.tecnico.sauron.silo.grpc.Silo.ClearRequest;
-import pt.tecnico.sauron.silo.grpc.Silo.InitRequest;
 import pt.tecnico.sauron.silo.grpc.Silo.ReportRequest;
 import pt.tecnico.sauron.silo.grpc.Silo.ReportResponse;
 import pt.tecnico.sauron.silo.grpc.Silo.ReportRequest.ReportItem;
 import pt.tecnico.sauron.silo.grpc.Silo.ReportResponse.FailureItem;
-import pt.ulisboa.tecnico.sdis.zk.ZKNamingException;
 
 
 public class ReportIT extends BaseIT {
@@ -27,7 +25,7 @@ public class ReportIT extends BaseIT {
     // static members
     private static final String host = testProps.getProperty("zoo.host");
     private static final String port = testProps.getProperty("zoo.port");
-    private static final int instance = 1;
+    private static final String instance = "1";
     private static SiloFrontend frontend;
     private final String CAM_NAME = "TESTCAM1";
     private final String VALID_PERSON_ID = "1234";
@@ -37,7 +35,7 @@ public class ReportIT extends BaseIT {
 
     // one-time initialization and clean-up
     @BeforeAll
-    public static void oneTimeSetUp() throws ZKNamingException{
+    public static void oneTimeSetUp() throws SiloFrontendException{
         frontend = new SiloFrontend(host, port, instance);
     }
 

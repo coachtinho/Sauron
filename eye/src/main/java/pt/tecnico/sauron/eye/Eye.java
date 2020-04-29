@@ -1,13 +1,13 @@
 package pt.tecnico.sauron.eye;
 
 import pt.tecnico.sauron.silo.client.SiloFrontend;
+import pt.tecnico.sauron.silo.client.SiloFrontendException;
 import pt.tecnico.sauron.silo.grpc.Silo.CameraRegistrationRequest;
 import pt.tecnico.sauron.silo.grpc.Silo.CameraRegistrationResponse;
 import pt.tecnico.sauron.silo.grpc.Silo.ReportRequest;
 import pt.tecnico.sauron.silo.grpc.Silo.ReportResponse;
 import pt.tecnico.sauron.silo.grpc.Silo.ReportRequest.ReportItem;
 import pt.tecnico.sauron.silo.grpc.Silo.ReportResponse.FailureItem;
-import pt.ulisboa.tecnico.sdis.zk.ZKNamingException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,9 +23,9 @@ public class Eye {
     String _name;
     double _latitude;
     double _longitude;
-    int _instance;
+    String _instance;
 
-    public Eye(final String host, final String port, final String name, final double latitude, final double longitude, final int instance) throws ZKNamingException {
+    public Eye(final String host, final String port, final String name, final double latitude, final double longitude, final String instance) throws SiloFrontendException {
         _name = name;
         _latitude = latitude;
         _longitude = longitude;

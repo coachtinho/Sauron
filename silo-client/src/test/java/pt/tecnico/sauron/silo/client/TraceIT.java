@@ -17,15 +17,13 @@ import java.util.List;
 
 import static io.grpc.Status.INVALID_ARGUMENT;
 import io.grpc.StatusRuntimeException;
-import pt.ulisboa.tecnico.sdis.zk.ZKNamingException;
-
 
 public class TraceIT extends BaseIT {
 
     private static SiloFrontend frontend;
     private static String port;
     private static String host;
-    private static int instance;
+    private static String instance;
     private static int offset;
     private static CameraRegistrationRequest camRequest1;
     private static CameraRegistrationRequest camRequest2;
@@ -33,10 +31,10 @@ public class TraceIT extends BaseIT {
     private static ReportRequest reportRequest2; 
 
     @BeforeAll
-    public static void oneTimeSetUp() throws StatusRuntimeException, InterruptedException, ZKNamingException {
+    public static void oneTimeSetUp() throws StatusRuntimeException, InterruptedException, SiloFrontendException {
         host = testProps.getProperty("zoo.host");
         port = testProps.getProperty("zoo.port");
-        instance = 1;
+        instance = "1";
         offset = Integer.parseInt(testProps.getProperty("time.tolerance"));
         frontend = new SiloFrontend(host, port, instance);
         

@@ -2,12 +2,12 @@ package pt.tecnico.sauron.spotter;
 
 import java.util.NoSuchElementException;
 import java.util.Scanner;
-import pt.ulisboa.tecnico.sdis.zk.ZKNamingException;
 
+import pt.tecnico.sauron.silo.client.SiloFrontendException;
 
 public class SpotterApp {
 
-	public static void main(String[] args) throws ZKNamingException {
+	public static void main(String[] args) {
 
 		System.out.println(SpotterApp.class.getSimpleName());
 
@@ -17,7 +17,7 @@ public class SpotterApp {
 		// check arguments
 		if (args.length < 2) {
 			System.out.println("Incorrect amount of arguments!");
-			System.out.printf("Usage: java %s host port%n", SpotterApp.class.getName());
+			System.out.printf("Usage: java %s host port <instance>", SpotterApp.class.getName());
 			return;
 		}
 
@@ -25,7 +25,14 @@ public class SpotterApp {
 			System.out.printf("arg[%d] = %s%n", i, args[i]);
 		}
 
-		Spotter spotter = new Spotter(args[0], args[1], Integer.parseInt(args[2]));
+		Spotter spotter;
+		try {
+			spotter = new Spotter(args[0], args[1], args[2]);
+		} catch (SiloFrontendException e) {
+			System.out.println("FATAL: " + e.getMessage());
+			System.out.println("Exiting...");
+			return;
+		}		
 		String[] arguments;
 		String keyword, line;
 

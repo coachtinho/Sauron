@@ -5,12 +5,11 @@ import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 import io.grpc.StatusRuntimeException;
-import pt.ulisboa.tecnico.sdis.zk.ZKNamingException;
-
+import pt.tecnico.sauron.silo.client.SiloFrontendException;
 
 public class EyeApp {
 
-	public static void main(final String[] args) throws ZKNamingException {
+	public static void main(final String[] args) throws SiloFrontendException {
 
 		System.out.println(EyeApp.class.getSimpleName());
 
@@ -33,7 +32,7 @@ public class EyeApp {
 				args[2], // camera name
 				Double.parseDouble(args[3]), // latitude
 				Double.parseDouble(args[4]), // longitude
-				Integer.parseInt(args[5])); // instance
+				args[5]); // instance
 
 		String[] input;
 		String line;

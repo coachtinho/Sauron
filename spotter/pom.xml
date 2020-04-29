@@ -16,7 +16,7 @@
 		<!-- see parent POM for more properties -->
 		<zoo.host>localhost</zoo.host>
 		<zoo.port>2181</zoo.port>
-		<instance>1</instance>
+		<instance></instance>
 		<mainclass>pt.tecnico.sauron.spotter.SpotterApp</mainclass>
 	</properties>
 
