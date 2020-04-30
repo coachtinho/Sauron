@@ -23,60 +23,10 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
 
     private final SiloServer siloServer;
     private final ReplicaManager _replicaManager;
-    private List<CameraRegistrationRequest> camJoinQueue = new ArrayList<CameraRegistrationRequest>();
-    private List<ReportRequest> reportQueue = new ArrayList<ReportRequest>();
 
     public SiloServerImpl(int instance) {
         siloServer = new SiloServer();
         _replicaManager = new ReplicaManager(instance);
-    }
-
-    private void checkUpdates() {
-        // Check if server can do any camJoin updates
-        boolean camUpdates;
-
-        do {
-            camUpdates = false;
-            for (CameraRegistrationRequest c : camJoinQueue) {
-                Vector<Integer> otherTS = _replicaManager.generateOtherTS(c.getTsList());
-
-                if (_replicaManager.canUpdate(otherTS)) {
-                    camUpdates = true;
-                    try {
-                        siloServer.registerCamera(c.getName(), c.getLatitude(), c.getLongitude());
-                    } catch (SiloException e) {
-
-                    } finally {
-                        _replicaManager.update(otherTS);
-                    }
-                }
-            }
-        } while (camUpdates);
-
-        // Check if server can do any report updates
-        boolean reportUpdates;
-
-        do {
-            reportUpdates = false;
-            for (ReportRequest r : reportQueue) {
-                Vector<Integer> otherTS = _replicaManager.generateOtherTS(r.getTsList());
-
-                if (_replicaManager.canUpdate(otherTS)) {
-                    reportUpdates = true;
-                    List<ReportItem> items = r.getReportsList();
-
-                    for (ReportItem item : items) {
-                        String cameraName = r.getCameraName();
-                        String type = item.getType();
-                        String id = item.getId();
-                        if (siloServer.isValidType(type) && siloServer.isValidId(type, id)) {
-                            siloServer.reportObservation(cameraName, type, id);
-                        }
-                    }
-                    _replicaManager.update(otherTS);
-                }
-            }
-        } while (reportUpdates);
     }
 
     @Override
@@ -352,6 +302,7 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
         String cameraName = request.getCameraName();
         Vector<Integer> otherTS = _replicaManager.generateOtherTS(request.getTsList());
 
+        // check if camera name is legit
         if (!siloServer.hasCamera(cameraName)) {
             responseObserver.onError(INVALID_ARGUMENT.withDescription("No such camera").asRuntimeException());
         } else if (!_replicaManager.canUpdate(otherTS)) {
@@ -365,26 +316,31 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
             responseObserver.onNext(response);
             responseObserver.onCompleted();
         } else {
+            // get reports
             List<ReportItem> items = request.getReportsList();
             ReportResponse.Builder responseBuilder = ReportResponse.newBuilder();
 
+            // get message timestamp
             Vector<Integer> valueTS = _replicaManager.update(otherTS);
             for (int ts : valueTS)
                 responseBuilder.addTs(ts);
 
+            // parse report
             for (ReportItem item : items) {
                 String type = item.getType();
                 String id = item.getId();
                 if (!siloServer.isValidType(type)) {
-                    responseBuilder.addFailures(
-                            FailureItem.newBuilder().setType(type).setId(id).setMessage("Invalid type").build());
+                    responseBuilder.addFailures(FailureItem.newBuilder() // invalid report type
+                            .setType(type).setId(id).setMessage("Invalid type").build());
                 } else if (!siloServer.isValidId(type, id)) {
-                    responseBuilder.addFailures(FailureItem.newBuilder().setType(type).setId(id)
-                            .setMessage("Invalid id '" + id + "' for type " + type).build());
+                    responseBuilder.addFailures(FailureItem.newBuilder() // invalid id
+                            .setType(type).setId(id).setMessage("Invalid id '" + id + "' for type " + type).build());
                 } else {
                     siloServer.reportObservation(cameraName, type, id);
                 }
             }
+
+            // build response message
             ReportResponse response = responseBuilder.build();
             responseObserver.onNext(response);
             responseObserver.onCompleted();
