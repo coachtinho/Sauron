@@ -70,20 +70,17 @@ public class ReplicaManager {
     }
 
     public void applyUpdate(SiloServer silo) {
-        applyCamJoinUpdates(silo);
-        applyReportUpdates(silo);
-    }
-
-    private void applyCamJoinUpdates(SiloServer silo) {
-        // apply camJoin updates when possible
-        boolean camUpdates = false;
+        boolean updates;
+        
         do {
-            camUpdates = false;
+            updates = false;
+            
             for (CameraRegistrationRequest c : _camJoinQueue) {
                 Vector<Integer> otherTS = generateOtherTS(c.getTsList());
 
                 if (canUpdate(otherTS)) {
-                    camUpdates = true;
+                    updates = true;
+                    _camJoinQueue.remove(c);
                     try {
                         silo.registerCamera(c.getName(), c.getLatitude(), c.getLongitude());
                     } catch (SiloException e) {
@@ -93,20 +90,13 @@ public class ReplicaManager {
                     }
                 }
             }
-        } while (camUpdates);
-    }
 
-    private void applyReportUpdates(SiloServer silo) {
-        // register reports when possible
-        boolean reportUpdates;
-
-        do {
-            reportUpdates = false;
             for (ReportRequest r : _reportQueue) {
                 Vector<Integer> otherTS = generateOtherTS(r.getTsList());
 
                 if (canUpdate(otherTS)) {
-                    reportUpdates = true;
+                    updates = true;
+                    _reportQueue.remove(r);
                     List<ReportItem> items = r.getReportsList();
 
                     for (ReportItem item : items) {
@@ -120,8 +110,7 @@ public class ReplicaManager {
                     update(otherTS);
                 }
             }
-        } while (reportUpdates);
-
+        } while (updates);
     }
 
     public void logReport(ReportRequest report) {

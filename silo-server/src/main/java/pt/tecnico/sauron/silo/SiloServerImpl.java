@@ -240,6 +240,7 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
             responseObserver.onError(INVALID_ARGUMENT.withDescription("Name length is illegal!").asRuntimeException());
         else if (!_replicaManager.canUpdate(otherTS)) {
             CameraRegistrationResponse.Builder responseBuilder = CameraRegistrationResponse.newBuilder();
+            _replicaManager.queueCamRegisterRequest(request);
 
             Vector<Integer> valueTS = _replicaManager.getTS();
             for (int ts : valueTS)
@@ -307,6 +308,7 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
             responseObserver.onError(INVALID_ARGUMENT.withDescription("No such camera").asRuntimeException());
         } else if (!_replicaManager.canUpdate(otherTS)) {
             ReportResponse.Builder responseBuilder = ReportResponse.newBuilder();
+            _replicaManager.queueReport(request);
 
             Vector<Integer> valueTS = _replicaManager.getTS();
             for (int ts : valueTS)
