@@ -5,6 +5,7 @@ import static io.grpc.Status.ALREADY_EXISTS;
 
 import java.util.Vector;
 import java.util.List;
+import java.util.ArrayList;
 
 import pt.tecnico.sauron.silo.domain.Observation;
 import pt.tecnico.sauron.silo.domain.ReplicaManager;
@@ -21,12 +22,61 @@ import com.google.protobuf.Timestamp;
 public class SiloServerImpl extends SauronGrpc.SauronImplBase {
 
     private final SiloServer siloServer;
-    private Vector<Integer> _valueTS;
     private final ReplicaManager _replicaManager;
+    private List<CameraRegistrationRequest> camJoinQueue = new ArrayList<CameraRegistrationRequest>();
+    private List<ReportRequest> reportQueue = new ArrayList<ReportRequest>();
 
     public SiloServerImpl(int instance) {
         siloServer = new SiloServer();
         _replicaManager = new ReplicaManager(instance);
+    }
+
+    private void checkUpdates() {
+        // Check if server can do any camJoin updates
+        boolean camUpdates;
+
+        do {
+            camUpdates = false;
+            for (CameraRegistrationRequest c : camJoinQueue) {
+                Vector<Integer> otherTS = _replicaManager.generateOtherTS(c.getTsList());
+
+                if (_replicaManager.canUpdate(otherTS)) {
+                    camUpdates = true;
+                    try {
+                        siloServer.registerCamera(c.getName(), c.getLatitude(), c.getLongitude());
+                    } catch (SiloException e) {
+
+                    } finally {
+                        _replicaManager.update(otherTS);
+                    }
+                }
+            }
+        } while (camUpdates);
+
+        // Check if server can do any report updates
+        boolean reportUpdates;
+
+        do {
+            reportUpdates = false;
+            for (ReportRequest r : reportQueue) {
+                Vector<Integer> otherTS = _replicaManager.generateOtherTS(r.getTsList());
+
+                if (_replicaManager.canUpdate(otherTS)) {
+                    reportUpdates = true;
+                    List<ReportItem> items = r.getReportsList();
+
+                    for (ReportItem item : items) {
+                        String cameraName = r.getCameraName();
+                        String type = item.getType();
+                        String id = item.getId();
+                        if (siloServer.isValidType(type) && siloServer.isValidId(type, id)) {
+                            siloServer.reportObservation(cameraName, type, id);
+                        }
+                    }
+                    _replicaManager.update(otherTS);
+                }
+            }
+        } while (reportUpdates);
     }
 
     @Override
@@ -94,8 +144,8 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
 
         TrackResponse.Builder responseBuilder = TrackResponse.newBuilder();
 
-        _valueTS = _replicaManager.update(otherTS);
-        for (int ts : _valueTS)
+        Vector<Integer> valueTS = _replicaManager.update(otherTS);
+        for (int ts : valueTS)
             responseBuilder.addTs(ts);
 
         if (obs != null) {
@@ -145,8 +195,8 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
 
         TraceResponse.Builder responseBuilder = TraceResponse.newBuilder();
 
-        _valueTS = _replicaManager.update(otherTS);
-        for (int ts : _valueTS)
+        Vector<Integer> valueTS = _replicaManager.update(otherTS);
+        for (int ts : valueTS)
             responseBuilder.addTs(ts);
 
         if (observations != null && !observations.isEmpty()) {
@@ -202,8 +252,8 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
 
         TrackMatchResponse.Builder responseBuilder = TrackMatchResponse.newBuilder();
 
-        _valueTS = _replicaManager.update(otherTS);
-        for (int ts : _valueTS)
+        Vector<Integer> valueTS = _replicaManager.update(otherTS);
+        for (int ts : valueTS)
             responseBuilder.addTs(ts);
 
         if (observations != null && !observations.isEmpty()) {
@@ -241,7 +291,8 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
         else if (!_replicaManager.canUpdate(otherTS)) {
             CameraRegistrationResponse.Builder responseBuilder = CameraRegistrationResponse.newBuilder();
 
-            for (int ts : _valueTS)
+            Vector<Integer> valueTS = _replicaManager.getTS();
+            for (int ts : valueTS)
                 responseBuilder.addTs(ts);
 
             final CameraRegistrationResponse response = responseBuilder.build();
@@ -253,8 +304,8 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
 
                 CameraRegistrationResponse.Builder responseBuilder = CameraRegistrationResponse.newBuilder();
 
-                _valueTS = _replicaManager.update(otherTS);
-                for (int ts : _valueTS)
+                Vector<Integer> valueTS = _replicaManager.update(otherTS);
+                for (int ts : valueTS)
                     responseBuilder.addTs(ts);
 
                 final CameraRegistrationResponse response = responseBuilder.build();
@@ -283,8 +334,8 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
 
             CameraInfoResponse.Builder responseBuilder = CameraInfoResponse.newBuilder();
 
-            _valueTS = _replicaManager.update(otherTS);
-            for (int ts : _valueTS)
+            Vector<Integer> valueTS = _replicaManager.update(otherTS);
+            for (int ts : valueTS)
                 responseBuilder.addTs(ts);
 
             responseBuilder.setLatitude(latitude).setLongitude(longitude);
@@ -306,8 +357,8 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
         } else if (!_replicaManager.canUpdate(otherTS)) {
             ReportResponse.Builder responseBuilder = ReportResponse.newBuilder();
 
-            _valueTS = _replicaManager.update(otherTS);
-            for (int ts : _valueTS)
+            Vector<Integer> valueTS = _replicaManager.getTS();
+            for (int ts : valueTS)
                 responseBuilder.addTs(ts);
 
             ReportResponse response = responseBuilder.build();
@@ -317,8 +368,8 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
             List<ReportItem> items = request.getReportsList();
             ReportResponse.Builder responseBuilder = ReportResponse.newBuilder();
 
-            _valueTS = _replicaManager.update(otherTS);
-            for (int ts : _valueTS)
+            Vector<Integer> valueTS = _replicaManager.update(otherTS);
+            for (int ts : valueTS)
                 responseBuilder.addTs(ts);
 
             for (ReportItem item : items) {
