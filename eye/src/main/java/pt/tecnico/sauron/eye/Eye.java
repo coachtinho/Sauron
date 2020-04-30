@@ -70,7 +70,7 @@ public class Eye {
         }
     }
 
-    public void sendReport() {
+    public void sendReport() throws SiloFrontendException {
         // Check if there are items to report
         if (_reports.isEmpty())
             return;
@@ -100,7 +100,7 @@ public class Eye {
         }
     }
 
-    public void register() {
+    public void register() throws SiloFrontendException {
         try {
             CameraRegistrationRequest request = CameraRegistrationRequest.newBuilder().setName(_name)
                     .setLatitude(_latitude).setLongitude(_longitude).build();

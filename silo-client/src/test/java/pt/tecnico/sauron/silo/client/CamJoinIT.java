@@ -49,7 +49,7 @@ public class CamJoinIT extends BaseIT {
     // tests
     
     @Test
-    public void camJoinOKTest() {
+    public void camJoinOKTest() throws SiloFrontendException {
         CameraRegistrationRequest request = CameraRegistrationRequest.newBuilder()
                 .setName("Camera2") //
                 .setLatitude(123.45) //
@@ -60,7 +60,7 @@ public class CamJoinIT extends BaseIT {
     }
 
     @Test
-    public void camJoinNoNameTest() {
+    public void camJoinNoNameTest() throws SiloFrontendException {
         CameraRegistrationRequest request = CameraRegistrationRequest.newBuilder()
                 .setLatitude(123.45) //
                 .setLongitude(678.91) //
@@ -73,7 +73,7 @@ public class CamJoinIT extends BaseIT {
     }
 
     @Test
-    public void camJoinShortNameTest() {
+    public void camJoinShortNameTest() throws SiloFrontendException {
         CameraRegistrationRequest request = CameraRegistrationRequest.newBuilder()
                 .setName("ab") //
                 .setLatitude(123.45) //
@@ -87,7 +87,7 @@ public class CamJoinIT extends BaseIT {
     }
 
     @Test
-    public void camJoinLongNameTest() {
+    public void camJoinLongNameTest() throws SiloFrontendException {
         CameraRegistrationRequest request = CameraRegistrationRequest.newBuilder()
                 .setName("abcdefghijklmnop") //
                 .setLatitude(123.45) //
@@ -101,7 +101,7 @@ public class CamJoinIT extends BaseIT {
     }
 
     @Test
-    public void camJoinDuplicateTest() {
+    public void camJoinDuplicateTest() throws SiloFrontendException {
         String name = testProps.getProperty("camera.name");
         CameraRegistrationRequest request = CameraRegistrationRequest.newBuilder()
                 .setName(name) //

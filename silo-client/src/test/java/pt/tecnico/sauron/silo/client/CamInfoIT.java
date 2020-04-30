@@ -49,7 +49,7 @@ public class CamInfoIT extends BaseIT {
     // tests
 
     @Test
-    public void camInfoOKTest() {
+    public void camInfoOKTest() throws SiloFrontendException {
         String name = testProps.getProperty("camera.name");
         double lat = Double.parseDouble(testProps.getProperty("camera.latitude"));
         double longi = Double.parseDouble(testProps.getProperty("camera.longitude"));
@@ -62,7 +62,7 @@ public class CamInfoIT extends BaseIT {
     }
 
     @Test
-    public void camInfoNoNameTest() {
+    public void camInfoNoNameTest() throws SiloFrontendException {
         CameraInfoRequest request = CameraInfoRequest.newBuilder().build();
         Exception exception = assertThrows(StatusRuntimeException.class, () -> frontend.camInfo(request));        
         assertEquals(INVALID_ARGUMENT.asRuntimeException().getClass(), exception.getClass());        
@@ -72,7 +72,7 @@ public class CamInfoIT extends BaseIT {
     }
 
     @Test
-    public void camInfoNotFoundTest() {
+    public void camInfoNotFoundTest() throws SiloFrontendException {
         CameraInfoRequest request = CameraInfoRequest.newBuilder()
                 .setName("Camera2") //
                 .build();

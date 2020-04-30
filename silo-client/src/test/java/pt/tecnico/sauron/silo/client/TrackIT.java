@@ -78,7 +78,7 @@ public class TrackIT extends BaseIT {
     }
 
     @Test
-    public void trackPersonTest() {
+    public void trackPersonTest() throws SiloFrontendException {
         String reportType = "person";
         String reportId = "1";
         TrackRequest request = TrackRequest.newBuilder().setType(reportType).setId(reportId).build();
@@ -94,7 +94,7 @@ public class TrackIT extends BaseIT {
     }
 
     @Test
-    public void trackCarTest() {
+    public void trackCarTest() throws SiloFrontendException {
         String reportType = "car";
         String reportId = "AA1111";
         TrackRequest request = TrackRequest.newBuilder().setType(reportType).setId(reportId).build();
@@ -110,7 +110,7 @@ public class TrackIT extends BaseIT {
     }
 
     @Test
-    public void trackEmptyTypeTest() {
+    public void trackEmptyTypeTest() throws SiloFrontendException {
         String reportId = reportRequest1.getReports(0).getId();
         TrackRequest request = TrackRequest.newBuilder().setId(reportId).build();
         StatusRuntimeException exception = assertThrows(StatusRuntimeException.class, () -> frontend.track(request));
@@ -119,7 +119,7 @@ public class TrackIT extends BaseIT {
     }
 
     @Test
-    public void trackEmptyIdTest() {
+    public void trackEmptyIdTest() throws SiloFrontendException {
         String reportType = reportRequest1.getReports(0).getType();
         TrackRequest request = TrackRequest.newBuilder().setType(reportType).build();
         StatusRuntimeException exception = assertThrows(StatusRuntimeException.class, () -> frontend.track(request));
@@ -128,7 +128,7 @@ public class TrackIT extends BaseIT {
     }
 
     @Test
-    public void trackInvalidPersonIdTest() {
+    public void trackInvalidPersonIdTest() throws SiloFrontendException {
         String reportType = reportRequest1.getReports(0).getType();
         TrackRequest request = TrackRequest.newBuilder().setType(reportType).setId("a").build();
         StatusRuntimeException exception = assertThrows(StatusRuntimeException.class, () -> frontend.track(request));
@@ -137,7 +137,7 @@ public class TrackIT extends BaseIT {
     }
 
     @Test
-    public void trackInvalidCarIdTest() {
+    public void trackInvalidCarIdTest() throws SiloFrontendException {
         String reportType = reportRequest1.getReports(2).getType();
         TrackRequest request = TrackRequest.newBuilder().setType(reportType).setId("1").build();
         StatusRuntimeException exception = assertThrows(StatusRuntimeException.class, () -> frontend.track(request));
@@ -146,7 +146,7 @@ public class TrackIT extends BaseIT {
     }
     
     @Test
-    public void trackInvalidTypeTest() {
+    public void trackInvalidTypeTest() throws SiloFrontendException {
         String reportId = reportRequest1.getReports(0).getId();
         TrackRequest request = TrackRequest.newBuilder().setType("a").setId(reportId).build();
         StatusRuntimeException exception = assertThrows(StatusRuntimeException.class, () -> frontend.track(request));
@@ -155,7 +155,7 @@ public class TrackIT extends BaseIT {
     }
 
     @Test
-    public void trackNonExistingPersonTest() {
+    public void trackNonExistingPersonTest() throws SiloFrontendException {
         String reportType = reportRequest1.getReports(0).getType();
         TrackRequest request = TrackRequest.newBuilder().setType(reportType).setId("123").build();
         TrackResponse response = frontend.track(request);
@@ -168,7 +168,7 @@ public class TrackIT extends BaseIT {
     }
 
     @Test
-    public void trackNonExistingCarTest() {
+    public void trackNonExistingCarTest() throws SiloFrontendException {
         String reportType = reportRequest1.getReports(2).getType();
         TrackRequest request = TrackRequest.newBuilder().setType(reportType).setId("AA12AA").build();
         TrackResponse response = frontend.track(request);

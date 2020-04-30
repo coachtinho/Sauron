@@ -82,7 +82,7 @@ public class TrackMatchIT extends BaseIT {
     }
 
     @Test
-    public void trackMatchPerfectMatchPersonTest() {
+    public void trackMatchPerfectMatchPersonTest() throws SiloFrontendException {
         String reportType = "person";
         String reportId = "1111";
         TrackMatchRequest request = TrackMatchRequest.newBuilder().setType(reportType).setId(reportId).build();
@@ -100,7 +100,7 @@ public class TrackMatchIT extends BaseIT {
     }
 
     @Test
-    public void trackMatchPerfectMatchCarTest() {
+    public void trackMatchPerfectMatchCarTest() throws SiloFrontendException {
         String reportType = "car";
         String reportId = "11AA11";
         TrackMatchRequest request = TrackMatchRequest.newBuilder().setType(reportType).setId(reportId).build();
@@ -118,7 +118,7 @@ public class TrackMatchIT extends BaseIT {
     }
 
     @Test
-    public void trackMatchStartsWithTest() {
+    public void trackMatchStartsWithTest() throws SiloFrontendException {
         String reportType = "person";
         TrackMatchRequest request = TrackMatchRequest.newBuilder().setType(reportType).setId("1*").build();
         TrackMatchResponse response = frontend.trackMatch(request);
@@ -143,7 +143,7 @@ public class TrackMatchIT extends BaseIT {
     }
 
     @Test
-    public void trackMatchEndsWithTest() {
+    public void trackMatchEndsWithTest() throws SiloFrontendException {
         String reportType = "car";
         TrackMatchRequest request = TrackMatchRequest.newBuilder().setType(reportType).setId("*1").build();
         TrackMatchResponse response = frontend.trackMatch(request);
@@ -162,7 +162,7 @@ public class TrackMatchIT extends BaseIT {
     }
 
     @Test
-    public void trackMatchStartWithEndsWithTest() {
+    public void trackMatchStartWithEndsWithTest() throws SiloFrontendException {
         String reportType = "car";
         TrackMatchRequest request = TrackMatchRequest.newBuilder().setType(reportType).setId("B*1").build();
         List<TrackResponse> observationList = frontend.trackMatch(request).getObservationList();
@@ -179,7 +179,7 @@ public class TrackMatchIT extends BaseIT {
     }
 
     @Test
-    public void trackMatchEmptyTypeTest() {
+    public void trackMatchEmptyTypeTest() throws SiloFrontendException {
         String reportId = reportRequest1.getReports(0).getId();
         TrackMatchRequest request = TrackMatchRequest.newBuilder().setId(reportId).build();
         StatusRuntimeException exception = assertThrows(StatusRuntimeException.class, () -> frontend.trackMatch(request));
@@ -188,7 +188,7 @@ public class TrackMatchIT extends BaseIT {
     }
 
     @Test
-    public void trackMatchEmptyIdTest() {
+    public void trackMatchEmptyIdTest() throws SiloFrontendException {
         String reportType = reportRequest1.getReports(0).getType();
         TrackMatchRequest request = TrackMatchRequest.newBuilder().setType(reportType).build();
         StatusRuntimeException exception = assertThrows(StatusRuntimeException.class, () -> frontend.trackMatch(request));
@@ -197,7 +197,7 @@ public class TrackMatchIT extends BaseIT {
     }
     
     @Test
-    public void trackMatchInvalidTypeTest() {
+    public void trackMatchInvalidTypeTest() throws SiloFrontendException {
         String reportId = reportRequest1.getReports(0).getId();
         TrackMatchRequest request = TrackMatchRequest.newBuilder().setType("a").setId(reportId).build();
         StatusRuntimeException exception = assertThrows(StatusRuntimeException.class, () -> frontend.trackMatch(request));
@@ -206,7 +206,7 @@ public class TrackMatchIT extends BaseIT {
     }
 
     @Test
-    public void trackMatchNonExistingPersonTest() {
+    public void trackMatchNonExistingPersonTest() throws SiloFrontendException {
         String reportType = reportRequest1.getReports(0).getType();
         TrackMatchRequest request = TrackMatchRequest.newBuilder().setType(reportType).setId("123").build();
         TrackMatchResponse response = frontend.trackMatch(request);
@@ -214,7 +214,7 @@ public class TrackMatchIT extends BaseIT {
     }
 
     @Test
-    public void trackMatchNonExistingCarTest() {
+    public void trackMatchNonExistingCarTest() throws SiloFrontendException {
         String reportType = reportRequest1.getReports(2).getType();
         TrackMatchRequest request = TrackMatchRequest.newBuilder().setType(reportType).setId("AA12AA").build();
         TrackMatchResponse response = frontend.trackMatch(request);

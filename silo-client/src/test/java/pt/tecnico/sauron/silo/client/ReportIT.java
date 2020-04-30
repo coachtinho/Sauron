@@ -47,7 +47,7 @@ public class ReportIT extends BaseIT {
     // initialization and clean-up for each test
 
     @BeforeEach
-    public void setUp() {
+    public void setUp() throws SiloFrontendException {
         CameraRegistrationRequest camRequest1 = CameraRegistrationRequest.newBuilder().setName(CAM_NAME)
                 .setLatitude(123.1).setLongitude(123.412).build();
         frontend.camJoin(camRequest1);
@@ -62,7 +62,7 @@ public class ReportIT extends BaseIT {
     // ################## TESTS ########################
 
     @Test
-    public void reportOneCarOKTest() {
+    public void reportOneCarOKTest() throws SiloFrontendException {
         // Arrange
         final ReportRequest.Builder request = makeReportRequest("car", VALID_CAR_ID, CAM_NAME);
 
@@ -75,7 +75,7 @@ public class ReportIT extends BaseIT {
     }
 
     @Test
-    public void reportOnePersonOKTest() {
+    public void reportOnePersonOKTest() throws SiloFrontendException {
         // Arrange
         ReportRequest.Builder request = makeReportRequest("person", VALID_PERSON_ID, CAM_NAME);
 
@@ -88,7 +88,7 @@ public class ReportIT extends BaseIT {
     }
 
     @Test
-    public void reportNoneOKTest() {
+    public void reportNoneOKTest() throws SiloFrontendException {
         // Arrange
         ReportRequest.Builder request = makeReportRequest("", "", CAM_NAME);
         request.clearReports(); // emtpy report list
@@ -103,7 +103,7 @@ public class ReportIT extends BaseIT {
     }
 
     @Test
-    public void reportMultipleOKTest() {
+    public void reportMultipleOKTest() throws SiloFrontendException {
         // Arrange
         ReportRequest.Builder request = makeReportRequest("person", VALID_PERSON_ID, CAM_NAME);
         ReportItem item = makeReportItem("car", VALID_CAR_ID);
@@ -118,7 +118,7 @@ public class ReportIT extends BaseIT {
     }
 
     @Test
-    public void reportWrongTypeFailTest() {
+    public void reportWrongTypeFailTest() throws SiloFrontendException {
         // Arrange
         ReportRequest.Builder request = makeReportRequest("COVID19", "stay at home", CAM_NAME);
 
@@ -135,7 +135,7 @@ public class ReportIT extends BaseIT {
     }
 
     @Test
-    public void reportCarInvalidIdFailTest() {
+    public void reportCarInvalidIdFailTest() throws SiloFrontendException {
         // Arrange
         ReportRequest.Builder request = makeReportRequest("car", INVALID_CAR_ID, CAM_NAME);
 
@@ -156,7 +156,7 @@ public class ReportIT extends BaseIT {
     }
 
     @Test
-    public void reportPersonInvalidIdFailTest() {
+    public void reportPersonInvalidIdFailTest() throws SiloFrontendException {
         // Arrange
         ReportRequest.Builder request = makeReportRequest("person", INVALID_PERSON_ID, CAM_NAME);
 
@@ -174,7 +174,7 @@ public class ReportIT extends BaseIT {
     }
 
     @Test
-    public void reportIllegalCameraExceptionTest() {
+    public void reportIllegalCameraExceptionTest() throws SiloFrontendException {
         // Arrange
         ReportRequest.Builder request = makeReportRequest("person", VALID_PERSON_ID, "CAM_THAT_DOESNT_EXIST");
 
@@ -187,7 +187,7 @@ public class ReportIT extends BaseIT {
     }
 
     @Test
-    public void reportMultipleWithOneWrongFailTest() {
+    public void reportMultipleWithOneWrongFailTest() throws SiloFrontendException {
         // Arrange
         ReportRequest.Builder request = makeReportRequest("person", VALID_PERSON_ID, CAM_NAME);
         ReportItem item = makeReportItem("car", VALID_CAR_ID);
@@ -209,7 +209,7 @@ public class ReportIT extends BaseIT {
     }
 
     @Test
-    public void reportMultipleWithMultipleWrongFailTest() {
+    public void reportMultipleWithMultipleWrongFailTest() throws SiloFrontendException {
         // Arrange
         ReportRequest.Builder request = makeReportRequest("person", VALID_PERSON_ID, CAM_NAME);
         ReportItem item = makeReportItem("car", VALID_CAR_ID);

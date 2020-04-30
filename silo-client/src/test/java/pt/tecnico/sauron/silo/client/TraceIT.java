@@ -83,7 +83,7 @@ public class TraceIT extends BaseIT {
     }
 
     @Test
-    public void tracePersonTest() {
+    public void tracePersonTest() throws SiloFrontendException {
         String reportType = "person";
         String reportId = "1111";
         TraceRequest request = TraceRequest.newBuilder().setType(reportType).setId(reportId).build();
@@ -102,7 +102,7 @@ public class TraceIT extends BaseIT {
     }
 
     @Test
-    public void traceCarTest() {
+    public void traceCarTest() throws SiloFrontendException {
         String reportType = "car";
         String reportId = "AA1111";
         TraceRequest request = TraceRequest.newBuilder().setType(reportType).setId(reportId).build();
@@ -120,7 +120,7 @@ public class TraceIT extends BaseIT {
     }
 
     @Test
-    public void TraceEmptyTypeTest() {
+    public void TraceEmptyTypeTest() throws SiloFrontendException {
         String reportId = reportRequest1.getReports(0).getId();
         TraceRequest request = TraceRequest.newBuilder().setId(reportId).build();
         StatusRuntimeException exception = assertThrows(StatusRuntimeException.class, () -> frontend.trace(request));
@@ -129,7 +129,7 @@ public class TraceIT extends BaseIT {
     }
 
     @Test
-    public void TraceEmptyIdTest() {
+    public void TraceEmptyIdTest() throws SiloFrontendException {
         String reportType = reportRequest1.getReports(0).getType();
         TraceRequest request = TraceRequest.newBuilder().setType(reportType).build();
         StatusRuntimeException exception = assertThrows(StatusRuntimeException.class, () -> frontend.trace(request));
@@ -138,7 +138,7 @@ public class TraceIT extends BaseIT {
     }
     
     @Test
-    public void TraceInvalidTypeTest() {
+    public void TraceInvalidTypeTest() throws SiloFrontendException {
         String reportId = reportRequest1.getReports(0).getId();
         TraceRequest request = TraceRequest.newBuilder().setType("a").setId(reportId).build();
         StatusRuntimeException exception = assertThrows(StatusRuntimeException.class, () -> frontend.trace(request));
@@ -147,7 +147,7 @@ public class TraceIT extends BaseIT {
     }
 
     @Test
-    public void TraceNonExistingPersonTest() {
+    public void TraceNonExistingPersonTest() throws SiloFrontendException {
         String reportType = reportRequest1.getReports(0).getType();
         TraceRequest request = TraceRequest.newBuilder().setType(reportType).setId("123").build();
         TraceResponse response = frontend.trace(request);
@@ -155,7 +155,7 @@ public class TraceIT extends BaseIT {
     }
 
     @Test
-    public void TraceNonExistingCarTest() {
+    public void TraceNonExistingCarTest() throws SiloFrontendException {
         String reportType = reportRequest1.getReports(2).getType();
         TraceRequest request = TraceRequest.newBuilder().setType(reportType).setId("AA12AA").build();
         TraceResponse response = frontend.trace(request);

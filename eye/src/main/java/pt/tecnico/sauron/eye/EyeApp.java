@@ -7,6 +7,7 @@ import java.util.Scanner;
 import io.grpc.StatusRuntimeException;
 import pt.tecnico.sauron.silo.client.SiloFrontendException;
 
+//TODO:decide what to do with the exceptions
 public class EyeApp {
 
 	public static void main(final String[] args) throws SiloFrontendException {

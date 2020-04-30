@@ -59,9 +59,9 @@ public class Spotter {
                 } 
             }
         } catch (StatusRuntimeException exception) {
-            if (handleException(exception)) {
-                this.spot(type, id);
-            }
+            handleRuntimeException(exception);
+        } catch (SiloFrontendException exception) {
+            handleFrontendException(exception);
         }
     }
 
@@ -71,9 +71,9 @@ public class Spotter {
             List<TrackResponse> observations = frontend.trace(request).getObservationList();
             observations.forEach((observation) -> printObservation(observation));
         } catch (StatusRuntimeException exception) {
-            if (handleException(exception)) {
-                this.trail(type, id);
-            }
+           handleRuntimeException(exception);
+        } catch (SiloFrontendException exception) {
+            handleFrontendException(exception);
         }
     }
 
@@ -91,10 +91,8 @@ public class Spotter {
             PingRequest request = PingRequest.newBuilder().setMessage("Hello server, are you there!?").build();
             System.out.println("Server answered with:" + frontend.ctrlPing(request).getMessage());
         } catch (StatusRuntimeException exception) {
-            if (handleException(exception)) {
-                this.ping();
-            }
-        }
+            handleRuntimeException(exception);
+        } 
     }
 
     public void clear() {
@@ -103,9 +101,7 @@ public class Spotter {
             frontend.ctrlClear(request);
             System.out.println("Server state cleared");
         } catch (StatusRuntimeException exception) {
-            if (handleException(exception)) {
-                this.clear();
-            }
+            handleRuntimeException(exception);
         }
     }
 
@@ -115,9 +111,7 @@ public class Spotter {
             frontend.ctrlInit(request);
             System.out.println("Server initialized");
         } catch (StatusRuntimeException exception) {
-            if (handleException(exception)) {
-                this.init();
-            }
+            handleRuntimeException(exception);
         }
     }
 
@@ -145,27 +139,12 @@ public class Spotter {
         frontend.close();
     }
 
-    // Add more custom messages if needed
-    // returns true if command needs to be retried
-    //TODO: maybe implement a retry system
-    public boolean handleException(StatusRuntimeException exception) {
-        Code statusCode = exception.getStatus().getCode();
-        switch (statusCode) {
-            case UNAVAILABLE:
-                System.out.println("Replica is currently unavailable, switching to another...");
-                try {
-                    frontend.connectReplica(null);
-                    System.out.println("New replica found!%nRetrying command...");
-                    return true;
-                } catch (SiloFrontendException e) {
-                    System.out.println(e.getMessage());
-                }
-                break;
-            default:
-                System.out.println(
-                        "Caught exception with code " + statusCode + " and description: " + exception.getMessage());
-        }
-        return false;
+    public void handleRuntimeException(StatusRuntimeException exception) {
+        System.out.println("Caught exception with code " + exception.getStatus().getCode() + " and description: " + exception.getMessage()); 
+    }
+
+    public void handleFrontendException(SiloFrontendException exception) {
+        System.out.println(exception.getMessage());
     }
 
 }
