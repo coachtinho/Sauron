@@ -252,6 +252,7 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
         } else {
             try {
                 siloServer.registerCamera(name, request.getLatitude(), request.getLongitude());
+                _replicaManager.logCamRegisterRequest(request);
 
                 CameraRegistrationResponse.Builder responseBuilder = CameraRegistrationResponse.newBuilder();
 
@@ -327,7 +328,7 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
             for (int ts : valueTS)
                 responseBuilder.addTs(ts);
 
-            // parse report
+            // process report items
             for (ReportItem item : items) {
                 String type = item.getType();
                 String id = item.getId();
@@ -337,10 +338,11 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
                 } else if (!siloServer.isValidId(type, id)) {
                     responseBuilder.addFailures(FailureItem.newBuilder() // invalid id
                             .setType(type).setId(id).setMessage("Invalid id '" + id + "' for type " + type).build());
-                } else {
+                } else { // register report
                     siloServer.reportObservation(cameraName, type, id);
                 }
             }
+            _replicaManager.logReport(request);
 
             // build response message
             ReportResponse response = responseBuilder.build();
