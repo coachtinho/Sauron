@@ -4,6 +4,8 @@ import io.grpc.BindableService;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import java.util.Scanner;
+
+import pt.tecnico.sauron.silo.domain.SiloServer;
 import pt.ulisboa.tecnico.sdis.zk.ZKNaming;
 import pt.ulisboa.tecnico.sdis.zk.ZKNamingException;
 
@@ -27,11 +29,17 @@ public class SiloServerApp {
         final String serverHost = args[3];
         final Integer serverPort = Integer.parseInt(args[4]);
 
+        // Dependencies
+        final SiloServer silo = new SiloServer();
+        final ReplicaManager replicaManager = new ReplicaManager(instance, zooHost, zooPort, silo);
+
+        // Bind grpc implementations
         final String path = "/grpc/sauron/silo/" + instance;
-        final BindableService impl = new SiloServerImpl(instance);
+        final BindableService impl = new SiloServerImpl(replicaManager, silo);
+        final BindableService impl_2 = replicaManager;
 
         // Create a new server to listen on port
-        Server server = ServerBuilder.forPort(serverPort).addService(impl).build();
+        Server server = ServerBuilder.forPort(serverPort).addService(impl).addService(impl_2).build();
         ZKNaming zkNaming = null;
         try {
             zkNaming = new ZKNaming(zooHost, zooPort);

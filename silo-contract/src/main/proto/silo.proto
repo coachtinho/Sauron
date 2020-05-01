@@ -105,8 +105,17 @@ message CameraInfoResponse {
     repeated int32 ts = 3;
 }
 
-// service
+// server to server messages (gossip protocol)
 
+message GossipRequest {
+    repeated CameraRegistrationRequest cameras = 1;
+    repeated ReportRequest reports = 2;
+}
+
+message GossipResponse {    
+}
+
+// service
 service Sauron {
     rpc ctrlPing(PingRequest) returns (PingResponse);
     rpc ctrlClear(ClearRequest) returns (ClearResponse);
@@ -116,5 +125,9 @@ service Sauron {
     rpc track(TrackRequest) returns (TrackResponse);
     rpc trace(TraceRequest) returns (TraceResponse);
     rpc trackMatch(TrackMatchRequest) returns (TrackMatchResponse);
-    rpc report(ReportRequest) returns (ReportResponse);
+    rpc report(ReportRequest) returns (ReportResponse);    
+}
+
+service Gossip {
+    rpc gossipData(GossipRequest) returns (GossipResponse);    
 }

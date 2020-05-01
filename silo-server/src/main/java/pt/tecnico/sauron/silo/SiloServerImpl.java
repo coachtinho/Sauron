@@ -5,10 +5,8 @@ import static io.grpc.Status.ALREADY_EXISTS;
 
 import java.util.Vector;
 import java.util.List;
-import java.util.ArrayList;
 
 import pt.tecnico.sauron.silo.domain.Observation;
-import pt.tecnico.sauron.silo.domain.ReplicaManager;
 import io.grpc.stub.StreamObserver;
 import pt.tecnico.sauron.silo.domain.Camera;
 import pt.tecnico.sauron.silo.domain.SiloException;
@@ -16,17 +14,18 @@ import pt.tecnico.sauron.silo.domain.SiloServer;
 import pt.tecnico.sauron.silo.grpc.Silo.*;
 import pt.tecnico.sauron.silo.grpc.Silo.ReportRequest.ReportItem;
 import pt.tecnico.sauron.silo.grpc.Silo.ReportResponse.FailureItem;
-import pt.tecnico.sauron.silo.grpc.SauronGrpc;
+import pt.tecnico.sauron.silo.grpc.SauronGrpc.SauronImplBase;
+
 import com.google.protobuf.Timestamp;
 
-public class SiloServerImpl extends SauronGrpc.SauronImplBase {
+public class SiloServerImpl extends SauronImplBase {
 
-    private final SiloServer siloServer;
+    private final SiloServer _siloServer;
     private final ReplicaManager _replicaManager;
 
-    public SiloServerImpl(int instance) {
-        siloServer = new SiloServer();
-        _replicaManager = new ReplicaManager(instance);
+    public SiloServerImpl(ReplicaManager replicaManager, SiloServer siloServer) {
+        _siloServer = siloServer;
+        _replicaManager = replicaManager;
     }
 
     @Override
@@ -46,7 +45,7 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
 
     @Override
     public void ctrlClear(final ClearRequest request, final StreamObserver<ClearResponse> responseObserver) {
-        siloServer.clear();
+        _siloServer.clear();
         final ClearResponse response = ClearResponse.getDefaultInstance();
         responseObserver.onNext(response);
         responseObserver.onCompleted();
@@ -54,9 +53,9 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
 
     @Override
     public void ctrlInit(final InitRequest request, final StreamObserver<InitResponse> responseObserver) {
-        siloServer.registerCamera("Camera1", 678.91, 123.45);
-        siloServer.reportObservation("Camera1", "car", "87JB40");
-        siloServer.reportObservation("Camera1", "person", "12345");
+        _siloServer.registerCamera("Camera1", 678.91, 123.45);
+        _siloServer.reportObservation("Camera1", "car", "87JB40");
+        _siloServer.reportObservation("Camera1", "person", "12345");
         final InitResponse response = InitResponse.getDefaultInstance();
         responseObserver.onNext(response);
         responseObserver.onCompleted();
@@ -79,9 +78,9 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
 
         try {
             if (type.equals("person")) {
-                obs = siloServer.trackPerson(id);
+                obs = _siloServer.trackPerson(id);
             } else if (type.equals("car")) {
-                obs = siloServer.trackCar(id);
+                obs = _siloServer.trackCar(id);
             } else {
                 responseObserver.onError(
                         INVALID_ARGUMENT.withDescription("Type is not a valid observation!").asRuntimeException());
@@ -130,9 +129,9 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
 
         try {
             if (type.equals("person")) {
-                observations = siloServer.tracePerson(id);
+                observations = _siloServer.tracePerson(id);
             } else if (type.equals("car")) {
-                observations = siloServer.traceCar(id);
+                observations = _siloServer.traceCar(id);
             } else {
                 responseObserver.onError(
                         INVALID_ARGUMENT.withDescription("Type is not a valid observation!").asRuntimeException());
@@ -187,9 +186,9 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
 
         try {
             if (type.equals("person")) {
-                observations = siloServer.trackMatchPerson(id);
+                observations = _siloServer.trackMatchPerson(id);
             } else if (type.equals("car")) {
-                observations = siloServer.trackMatchCar(id);
+                observations = _siloServer.trackMatchCar(id);
             } else {
                 responseObserver.onError(
                         INVALID_ARGUMENT.withDescription("Type is not a valid observation!").asRuntimeException());
@@ -251,7 +250,7 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
             responseObserver.onCompleted();
         } else {
             try {
-                siloServer.registerCamera(name, request.getLatitude(), request.getLongitude());
+                _siloServer.registerCamera(name, request.getLatitude(), request.getLongitude());
                 _replicaManager.logCamRegisterRequest(request);
 
                 CameraRegistrationResponse.Builder responseBuilder = CameraRegistrationResponse.newBuilder();
@@ -278,7 +277,7 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
 
         if (name.isBlank()) // Check name exists
             responseObserver.onError(INVALID_ARGUMENT.withDescription("Name cannot be empty!").asRuntimeException());
-        else if ((cam = siloServer.camInfo(name)) == null) // Check name exists
+        else if ((cam = _siloServer.camInfo(name)) == null) // Check name exists
             responseObserver.onError(INVALID_ARGUMENT.withDescription("No such camera!").asRuntimeException());
         else {
             double latitude = cam.getLatitude();
@@ -305,7 +304,7 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
         Vector<Integer> otherTS = _replicaManager.generateOtherTS(request.getTsList());
 
         // check if camera name is legit
-        if (!siloServer.hasCamera(cameraName)) {
+        if (!_siloServer.hasCamera(cameraName)) {
             responseObserver.onError(INVALID_ARGUMENT.withDescription("No such camera").asRuntimeException());
         } else if (!_replicaManager.canUpdate(otherTS)) {
             ReportResponse.Builder responseBuilder = ReportResponse.newBuilder();
@@ -332,14 +331,14 @@ public class SiloServerImpl extends SauronGrpc.SauronImplBase {
             for (ReportItem item : items) {
                 String type = item.getType();
                 String id = item.getId();
-                if (!siloServer.isValidType(type)) {
+                if (!_siloServer.isValidType(type)) {
                     responseBuilder.addFailures(FailureItem.newBuilder() // invalid report type
                             .setType(type).setId(id).setMessage("Invalid type").build());
-                } else if (!siloServer.isValidId(type, id)) {
+                } else if (!_siloServer.isValidId(type, id)) {
                     responseBuilder.addFailures(FailureItem.newBuilder() // invalid id
                             .setType(type).setId(id).setMessage("Invalid id '" + id + "' for type " + type).build());
                 } else { // register report
-                    siloServer.reportObservation(cameraName, type, id);
+                    _siloServer.reportObservation(cameraName, type, id);
                 }
             }
             _replicaManager.logReport(request);

@@ -23,8 +23,8 @@ public class SiloFrontend {
     ManagedChannel channel;
     SauronGrpc.SauronBlockingStub stub;
     ZKNaming zkNaming;
-    String target;  //Replica URI
-    String instance; //Replica to contact
+    String target; // Replica URI
+    String instance; // Replica to contact
 
     public SiloFrontend(String host, String port, String instance) throws SiloFrontendException {
         this.zkNaming = new ZKNaming(host, port);
@@ -44,7 +44,8 @@ public class SiloFrontend {
                 this.channel = ManagedChannelBuilder.forTarget(target).usePlaintext().build();
                 this.stub = SauronGrpc.newBlockingStub(channel);
             } catch (ZKNamingException e) {
-                throw new SiloFrontendException("Error connecting to specified replica:" + e.getMessage() + ":" + e.getCause().getMessage(), e);
+                throw new SiloFrontendException(
+                        "Error connecting to specified replica:" + e.getMessage() + ":" + e.getCause().getMessage(), e);
             }
         }
     }
@@ -69,7 +70,7 @@ public class SiloFrontend {
                 return stub.camJoin(request);
             } catch (StatusRuntimeException e) {
                 if (e.getStatus().getCode() != UNAVAILABLE) {
-                    // Let client handle the exception 
+                    // Let client handle the exception
                     throw e;
                 }
             }
@@ -100,7 +101,7 @@ public class SiloFrontend {
                 return stub.camInfo(request);
             } catch (StatusRuntimeException e) {
                 if (e.getStatus().getCode() != UNAVAILABLE) {
-                    // Let client handle the exception 
+                    // Let client handle the exception
                     throw e;
                 }
             }
@@ -131,7 +132,7 @@ public class SiloFrontend {
                 return stub.report(request);
             } catch (StatusRuntimeException e) {
                 if (e.getStatus().getCode() != UNAVAILABLE) {
-                    // Let client handle the exception 
+                    // Let client handle the exception
                     throw e;
                 }
             }
@@ -162,7 +163,7 @@ public class SiloFrontend {
                 return stub.track(request);
             } catch (StatusRuntimeException e) {
                 if (e.getStatus().getCode() != UNAVAILABLE) {
-                    // Let client handle the exception 
+                    // Let client handle the exception
                     throw e;
                 }
             }
@@ -193,7 +194,7 @@ public class SiloFrontend {
                 return stub.trackMatch(request);
             } catch (StatusRuntimeException e) {
                 if (e.getStatus().getCode() != UNAVAILABLE) {
-                    // Let client handle the exception 
+                    // Let client handle the exception
                     throw e;
                 }
             }
@@ -224,7 +225,7 @@ public class SiloFrontend {
                 return stub.trace(request);
             } catch (StatusRuntimeException e) {
                 if (e.getStatus().getCode() != UNAVAILABLE) {
-                    // Let client handle the exception 
+                    // Let client handle the exception
                     throw e;
                 }
             }
@@ -263,7 +264,7 @@ public class SiloFrontend {
         try {
             Collection<ZKRecord> records = this.zkNaming.listRecords(BASE_PATH);
             ZKRecord record;
-            
+
             // Connects to a random available replica
             while (records.size() > 0) {
                 record = getRandom(records);
@@ -287,9 +288,11 @@ public class SiloFrontend {
                     records.remove(record);
                 }
             }
-            throw new SiloFrontendException("Error connecting to random replica:Tried all known replicas without success");
+            throw new SiloFrontendException(
+                    "Error connecting to random replica:Tried all known replicas without success");
         } catch (ZKNamingException e) {
-            throw new SiloFrontendException("Error connecting to random replica:" + e.getMessage() + ": " + e.getCause().getMessage(), e);
+            throw new SiloFrontendException(
+                    "Error connecting to random replica:" + e.getMessage() + ": " + e.getCause().getMessage(), e);
         }
     }
 

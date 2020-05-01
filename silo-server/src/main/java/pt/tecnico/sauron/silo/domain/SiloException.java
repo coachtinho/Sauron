@@ -11,6 +11,10 @@ public class SiloException extends RuntimeException {
         this.errorMessage = errorMessage;
     }
 
+    public SiloException(String errorMessage) {
+        super(errorMessage);
+    }
+
     public ErrorMessage getErrorMessage() {
         return errorMessage;
     }
