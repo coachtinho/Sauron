@@ -10,7 +10,7 @@ import pt.tecnico.sauron.silo.client.SiloFrontendException;
 //TODO:decide what to do with the exceptions
 public class EyeApp {
 
-	public static void main(final String[] args) throws SiloFrontendException {
+	public static void main(final String[] args) {
 
 		System.out.println(EyeApp.class.getSimpleName());
 
@@ -28,16 +28,21 @@ public class EyeApp {
 			System.out.printf("arg[%d] = %s%n", i, args[i]);
 		}
 
-		System.out.println("creating eye'");
-		final Eye eye = new Eye(args[0], args[1], //
-				args[2], // camera name
-				Double.parseDouble(args[3]), // latitude
-				Double.parseDouble(args[4]), // longitude
-				args[5]); // instance
-
+        System.out.println("creating eye'");
+        Eye eye;
+        try {
+            eye = new Eye(args[0], args[1], //
+            args[2], // camera name
+            Double.parseDouble(args[3]), // latitude
+            Double.parseDouble(args[4]), // longitude
+            args[5]); // instance
+        } catch (SiloFrontendException e) {
+            System.out.println("FATAL: " + e.getMessage());
+            System.out.println("Exiting...");
+			return;
+        }
 		String[] input;
 		String line;
-		System.out.println("Scanning shit'");
 		// Main cycle
 		try (Scanner scanner = new Scanner(System.in)) {
 			while (true) {

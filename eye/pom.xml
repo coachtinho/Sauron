@@ -17,7 +17,7 @@
 		<!-- see parent POM for more properties -->
 		<zoo.host>localhost</zoo.host>
 		<zoo.port>2181</zoo.port>
-		<instance>1</instance>
+		<instance></instance>
 		<name>localhost</name>
 		<camera.name>Alameda</camera.name>
 		<camera.longitude>-25.284736</camera.longitude>

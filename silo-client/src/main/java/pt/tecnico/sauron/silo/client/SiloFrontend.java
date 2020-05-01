@@ -28,6 +28,7 @@ public class SiloFrontend {
     ZKNaming zkNaming;
     String target; //Replica URI
     String instance; //Replica to contact
+    CameraRegistrationRequest cam;
 
     //Caches
     HashMap<CameraInfoRequest, CameraInfoResponse> cameraInfoCache = new HashMap<CameraInfoRequest, CameraInfoResponse>();
@@ -48,9 +49,10 @@ public class SiloFrontend {
         else {
             try {
                 ZKRecord record = this.zkNaming.lookup(BASE_PATH + "/" + instance);
-                target = record.getURI();
+                this.target = record.getURI();
                 this.channel = ManagedChannelBuilder.forTarget(target).usePlaintext().build();
                 this.stub = SauronGrpc.newBlockingStub(channel);
+                System.out.println("Connected to specified replica at " + this.target);
             } catch (ZKNamingException e) {
                 throw new SiloFrontendException(
                         "Error connecting to specified replica:" + e.getMessage() + ":" + e.getCause().getMessage(), e);
@@ -73,6 +75,7 @@ public class SiloFrontend {
 
     public CameraRegistrationResponse camJoin(CameraRegistrationRequest request) throws SiloFrontendException {
         int numTries = 0;
+        this.cam = request;
         while (true) {
             try {
                 return stub.camJoin(request);
@@ -184,9 +187,18 @@ public class SiloFrontend {
         System.out.println("Trying to contact another replica to tolerate fault...");
         connectToRandomReplica();
 
+        // registers camera in new Replica
+        System.out.println("Registering camera in new replica");
+        reregisterCam(this.cam);
+
         // Retries operation
         System.out.println("Retrying operation...");
         return report(request);
+    }
+
+    // this method is only used when registering a camera after swapping to another replica
+    private void reregisterCam(CameraRegistrationRequest request) throws SiloFrontendException {
+        stub.camJoin(request);
     }
 
     public TrackResponse track(TrackRequest request) throws SiloFrontendException {
