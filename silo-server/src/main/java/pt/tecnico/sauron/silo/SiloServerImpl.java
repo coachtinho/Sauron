@@ -93,9 +93,8 @@ public class SiloServerImpl extends SauronImplBase {
 
         TrackResponse.Builder responseBuilder = TrackResponse.newBuilder();
 
-        Vector<Integer> valueTS = _replicaManager.update(otherTS);
-        for (int ts : valueTS)
-            responseBuilder.addTs(ts);
+        Vector<Integer> valueTS = _replicaManager.getTS();
+        responseBuilder.addAllTs(valueTS);
 
         if (obs != null) {
             Timestamp timestamp = Timestamp.newBuilder().setSeconds(obs.getInstant().getEpochSecond()).build();
@@ -144,9 +143,8 @@ public class SiloServerImpl extends SauronImplBase {
 
         TraceResponse.Builder responseBuilder = TraceResponse.newBuilder();
 
-        Vector<Integer> valueTS = _replicaManager.update(otherTS);
-        for (int ts : valueTS)
-            responseBuilder.addTs(ts);
+        Vector<Integer> valueTS = _replicaManager.getTS();
+        responseBuilder.addAllTs(valueTS);
 
         if (observations != null && !observations.isEmpty()) {
 
@@ -201,9 +199,8 @@ public class SiloServerImpl extends SauronImplBase {
 
         TrackMatchResponse.Builder responseBuilder = TrackMatchResponse.newBuilder();
 
-        Vector<Integer> valueTS = _replicaManager.update(otherTS);
-        for (int ts : valueTS)
-            responseBuilder.addTs(ts);
+        Vector<Integer> valueTS = _replicaManager.getTS();
+        responseBuilder.addAllTs(valueTS);
 
         if (observations != null && !observations.isEmpty()) {
 
@@ -242,8 +239,7 @@ public class SiloServerImpl extends SauronImplBase {
             _replicaManager.queueCamRegisterRequest(request);
 
             Vector<Integer> valueTS = _replicaManager.getTS();
-            for (int ts : valueTS)
-                responseBuilder.addTs(ts);
+            responseBuilder.addAllTs(valueTS);
 
             final CameraRegistrationResponse response = responseBuilder.build();
             responseObserver.onNext(response);
@@ -285,9 +281,8 @@ public class SiloServerImpl extends SauronImplBase {
 
             CameraInfoResponse.Builder responseBuilder = CameraInfoResponse.newBuilder();
 
-            Vector<Integer> valueTS = _replicaManager.update(otherTS);
-            for (int ts : valueTS)
-                responseBuilder.addTs(ts);
+            Vector<Integer> valueTS = _replicaManager.getTS();
+            responseBuilder.addAllTs(valueTS);
 
             responseBuilder.setLatitude(latitude).setLongitude(longitude);
 
@@ -311,8 +306,7 @@ public class SiloServerImpl extends SauronImplBase {
             _replicaManager.queueReport(request);
 
             Vector<Integer> valueTS = _replicaManager.getTS();
-            for (int ts : valueTS)
-                responseBuilder.addTs(ts);
+            responseBuilder.addAllTs(valueTS);
 
             ReportResponse response = responseBuilder.build();
             responseObserver.onNext(response);
