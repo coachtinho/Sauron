@@ -1,5 +1,8 @@
 package pt.tecnico.sauron.silo;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -7,6 +10,8 @@ import java.util.Vector;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+
+import com.google.protobuf.Timestamp;
 
 import io.grpc.stub.StreamObserver;
 import pt.tecnico.sauron.silo.grpc.Silo.CameraRegistrationRequest;
@@ -28,8 +33,8 @@ public class ReplicaManager extends GossipImplBase {
     private Vector<ReportRequest> _reportLog;
     private Vector<CameraRegistrationRequest> _camJoinLog;
     // queues
-    private List<CameraRegistrationRequest> _camJoinQueue;
-    private List<ReportRequest> _reportQueue;
+    private Vector<CameraRegistrationRequest> _camJoinQueue;
+    private Vector<ReportRequest> _reportQueue;
     // frontend
     ReplicaFrontend _frontend;
 
@@ -42,17 +47,19 @@ public class ReplicaManager extends GossipImplBase {
         }
         _reportLog = new Vector<>();
         _camJoinLog = new Vector<>();
-        _camJoinQueue = new ArrayList<CameraRegistrationRequest>();
-        _reportQueue = new ArrayList<ReportRequest>();
+        _camJoinQueue = new Vector<CameraRegistrationRequest>();
+        _reportQueue = new Vector<ReportRequest>();
 
         _frontend = new ReplicaFrontend(zooHost, zooPort, instance);
 
         // Set gossip message timer
         Runnable helloRunnable = new Runnable() {
             public void run() {
-                System.out.println("Started...");
+                // System.out.println("Started...");
                 _frontend.gossipData(_camJoinLog, _reportLog, new Vector<>(_TS));
-                System.out.println("Stopped...");
+                _camJoinLog.clear();
+                _reportLog.clear();
+                // System.out.println("Stopped...");
             }
         };
 
@@ -91,19 +98,10 @@ public class ReplicaManager extends GossipImplBase {
 
     }
 
-    public Vector<Integer> update(Vector<Integer> otherTS) {
+    public Vector<Integer> update() {
         synchronized (_TS) {
-            Vector<Integer> newTS = new Vector<Integer>();
-            // Merge timestamps
-            for (int i = 0; i < _TS.size(); i++)
-                newTS.add(Math.max(_TS.get(i), otherTS.get(i)));
-
-            // Increment replicas value
-            int ts = newTS.get(_instance - 1) + 1;
-            newTS.setElementAt(ts, _instance - 1);
-
-            // Update timestamp
-            _TS = newTS;
+            // Increment timestamp
+            _TS.setElementAt(_TS.get(_instance - 1) + 1, _instance - 1);
         }
 
         return _TS;
@@ -111,50 +109,60 @@ public class ReplicaManager extends GossipImplBase {
 
     public void applyUpdate() {
         boolean updates;
-
         do {
             updates = false;
 
-            for (CameraRegistrationRequest c : _camJoinQueue) {
-                Vector<Integer> otherTS = generateOtherTS(c.getTsList());
-
-                if (canUpdate(otherTS)) {
-                    updates = true;
-                    _camJoinQueue.remove(c);
-                    try {
-                        _siloServer.registerCamera(c.getName(), c.getLatitude(), c.getLongitude());
-                    } catch (SiloException e) {
-                        // TODO: throw something
-                    } finally {
-                        update(otherTS);
-                    }
+            // Apply camera registration requests
+            for (int i = _camJoinQueue.size() - 1; i >= 0; i--) {
+                updates = true;
+                CameraRegistrationRequest c = _camJoinQueue.get(i);
+                _camJoinQueue.remove(c);
+                try {
+                    _siloServer.registerCamera(c.getName(), c.getLatitude(), c.getLongitude());
+                } catch (SiloException e) {
+                    // TODO: throw something
+                } finally {
+                    update();
                 }
             }
 
-            for (ReportRequest r : _reportQueue) {
-                Vector<Integer> otherTS = generateOtherTS(r.getTsList());
-
-                if (canUpdate(otherTS)) {
-                    updates = true;
-                    _reportQueue.remove(r);
-                    List<ReportItem> items = r.getReportsList();
-
-                    for (ReportItem item : items) {
-                        String cameraName = r.getCameraName();
-                        String type = item.getType();
-                        String id = item.getId();
-                        if (_siloServer.isValidType(type) && _siloServer.isValidId(type, id)) {
-                            _siloServer.reportObservation(cameraName, type, id);
-                        }
-                    }
-                    update(otherTS);
+            // Apply report requests
+            for (int i = _reportQueue.size() - 1; i >= 0; i--) {
+                updates = true;
+                ReportRequest r = _reportQueue.get(i);
+                _reportQueue.remove(r);
+                List<ReportItem> items = r.getReportsList();
+                LocalDateTime timestamp = timestampToLocalDateTime(r.getTimestamp());
+                for (ReportItem item : items) {
+                    String cameraName = r.getCameraName();
+                    String type = item.getType();
+                    String id = item.getId();
+                    if (_siloServer.isValidType(type) && _siloServer.isValidId(type, id))
+                        _siloServer.reportObservation(cameraName, type, id, timestamp);
                 }
+                update();
             }
         } while (updates);
+
     }
 
-    public void logReport(ReportRequest report) {
-        _reportLog.add(report);
+    private LocalDateTime timestampToLocalDateTime(Timestamp timestamp) {
+        return Instant.ofEpochSecond(timestamp.getSeconds(), timestamp.getNanos()).atZone(ZoneId.of("Portugal"))
+                .toLocalDateTime();
+    }
+
+    public void logReport(ReportRequest report, LocalDateTime timestamp) {
+        // TODO: move this to private function
+        Timestamp instant = Timestamp.newBuilder()
+                .setSeconds(timestamp.atZone(ZoneId.systemDefault()).toInstant().getEpochSecond()).build();
+
+        ReportRequest request = ReportRequest.newBuilder() //
+                .addAllReports(report.getReportsList()) //
+                .setCameraName(report.getCameraName()) //
+                .setTimestamp(instant) //
+                .build();
+
+        _reportLog.add(request);
     }
 
     public void logCamRegisterRequest(CameraRegistrationRequest cameraRegistrationRequest) {

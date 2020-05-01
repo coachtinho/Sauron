@@ -40,29 +40,10 @@ public class ReplicaFrontend {
             Vector<Integer> ts) {
 
         // Create gossip message
-        final GossipRequest.Builder requestBuilder = GossipRequest.newBuilder();
-
-        // Update timestamp on camera join requests
-        for (CameraRegistrationRequest cam : camJoinLog) {
-            CameraRegistrationRequest camRequest = CameraRegistrationRequest.newBuilder() //
-                    .setName(cam.getName()) //
-                    .setLatitude(cam.getLatitude()) //
-                    .setLongitude(cam.getLongitude()) //
-                    .addAllTs(ts).build();
-            requestBuilder.addCameras(camRequest);
-        }
-
-        // Update timestamp on report requests
-        for (ReportRequest report : reportLog) {
-            ReportRequest reportRequest = ReportRequest.newBuilder() //
-                    .setCameraName(report.getCameraName()) //
-                    .addAllReports(report.getReportsList()) //
-                    .addAllTs(ts)//
-                    .build();
-            requestBuilder.addReports(reportRequest);
-        }
-
-        GossipRequest request = requestBuilder.build();
+        final GossipRequest request = GossipRequest.newBuilder()//
+                .addAllCameras(camJoinLog) //
+                .addAllReports(reportLog)//
+                .build();
 
         try {
             Collection<ZKRecord> records = this.zkNaming.listRecords(BASE_PATH);
@@ -70,10 +51,11 @@ public class ReplicaFrontend {
 
             for (ZKRecord record : records) {
                 if (record.getPath().matches(".*\\/" + _instance + "$")) {
-                    System.out.println("Caught myself: " + record.getPath());
+                    System.out.println("Myself: " + record.getPath());
                     continue;
                 }
 
+                System.out.println("Gossiping to: " + record.getPath());
                 pool.execute(new SendGossipTask(record, request));
             }
         } catch (ZKNamingException e) {

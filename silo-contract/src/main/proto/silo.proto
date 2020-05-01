@@ -31,8 +31,8 @@ message ReportRequest {
         string id = 2;
     }
     string cameraName = 1;
-    repeated ReportItem reports = 2;
-    repeated int32 ts = 3;
+    google.protobuf.Timestamp timestamp = 2;
+    repeated ReportItem reports = 3;    
 }
 
 message ReportResponse {
@@ -47,8 +47,7 @@ message ReportResponse {
 
 message TrackRequest {
     string type = 1;
-    string id = 2;
-    repeated int32 ts = 3;
+    string id = 2;    
 }
 
 message TrackResponse {
@@ -63,8 +62,7 @@ message TrackResponse {
 
 message TrackMatchRequest {
     string type = 1;
-    string id = 2;
-    repeated int32 ts = 3;
+    string id = 2;    
 }
 
 message TrackMatchResponse {
@@ -74,8 +72,7 @@ message TrackMatchResponse {
 
 message TraceRequest {
     string type = 1;
-    string id = 2;
-    repeated int32 ts = 3;
+    string id = 2;    
 }
 
 message TraceResponse {
@@ -86,8 +83,7 @@ message TraceResponse {
 message CameraRegistrationRequest {    
     string name = 1;
     double latitude = 2; // assure precision to 6 decimal cases (float barely reaches 5 at 128-256 range)
-    double longitude = 3;
-    repeated int32 ts = 4;
+    double longitude = 3;   
 }
 
 message CameraRegistrationResponse {
@@ -95,8 +91,8 @@ message CameraRegistrationResponse {
 }
 
 message CameraInfoRequest {
-    string name = 1;  
-    repeated int32 ts = 2;  
+    string name = 1; 
+    
 }
 
 message CameraInfoResponse {
@@ -109,7 +105,7 @@ message CameraInfoResponse {
 
 message GossipRequest {
     repeated CameraRegistrationRequest cameras = 1;
-    repeated ReportRequest reports = 2;
+    repeated ReportRequest reports = 2;    
 }
 
 message GossipResponse {    

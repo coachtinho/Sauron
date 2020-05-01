@@ -1,6 +1,5 @@
 package pt.tecnico.sauron.silo.domain;
 
-
 import java.lang.String;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -13,9 +12,9 @@ public abstract class Observation {
     DateTimeFormatter _dtf;
     Camera _cam;
 
-    public Observation(Camera camera) {
+    public Observation(Camera camera, LocalDateTime timestamp) {
         _cam = camera;
-        _timestamp = LocalDateTime.now();
+        _timestamp = timestamp;
         _dtf = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
     }
 

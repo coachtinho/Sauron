@@ -1,11 +1,13 @@
 package pt.tecnico.sauron.silo.domain;
 
+import java.time.LocalDateTime;
+
 public class Car extends Observation {
 
     String _id;
 
-    public Car(String id, Camera cam) {
-        super(cam);
+    public Car(String id, Camera cam, LocalDateTime timestamp) {
+        super(cam, timestamp);
         _id = id;
     }
 
@@ -28,7 +30,7 @@ public class Car extends Observation {
         String group = id.substring(0, 2);
 
         for (int i = 0, j = 2; j <= 6; i += 2, j += 2) {
-            group = id.substring(i, j);            
+            group = id.substring(i, j);
             if (group.matches("[A-Z][A-Z]"))
                 nLetterGroups++;
             else if (group.matches("[0-9][0-9]"))

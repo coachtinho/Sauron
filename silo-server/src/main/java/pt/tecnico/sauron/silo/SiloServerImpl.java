@@ -4,6 +4,7 @@ import static io.grpc.Status.INVALID_ARGUMENT;
 import static io.grpc.Status.ALREADY_EXISTS;
 
 import java.util.Vector;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import pt.tecnico.sauron.silo.domain.Observation;
@@ -54,8 +55,8 @@ public class SiloServerImpl extends SauronImplBase {
     @Override
     public void ctrlInit(final InitRequest request, final StreamObserver<InitResponse> responseObserver) {
         _siloServer.registerCamera("Camera1", 678.91, 123.45);
-        _siloServer.reportObservation("Camera1", "car", "87JB40");
-        _siloServer.reportObservation("Camera1", "person", "12345");
+        _siloServer.reportObservation("Camera1", "car", "87JB40", LocalDateTime.now());
+        _siloServer.reportObservation("Camera1", "person", "12345", LocalDateTime.now());
         final InitResponse response = InitResponse.getDefaultInstance();
         responseObserver.onNext(response);
         responseObserver.onCompleted();
@@ -66,7 +67,6 @@ public class SiloServerImpl extends SauronImplBase {
         final String type = request.getType();
         final String id = request.getId();
         Observation obs;
-        Vector<Integer> otherTS = _replicaManager.generateOtherTS(request.getTsList());
 
         if (type.isBlank()) {
             responseObserver.onError(INVALID_ARGUMENT.withDescription("Type cannot be empty!").asRuntimeException());
@@ -116,7 +116,6 @@ public class SiloServerImpl extends SauronImplBase {
         final String type = request.getType();
         final String id = request.getId();
         List<Observation> observations;
-        Vector<Integer> otherTS = _replicaManager.generateOtherTS(request.getTsList());
 
         if (type.isBlank()) {
             responseObserver.onError(INVALID_ARGUMENT.withDescription("Type cannot be empty!").asRuntimeException());
@@ -172,7 +171,6 @@ public class SiloServerImpl extends SauronImplBase {
         final String type = request.getType();
         final String id = request.getId();
         List<Observation> observations;
-        Vector<Integer> otherTS = _replicaManager.generateOtherTS(request.getTsList());
 
         if (type.isBlank()) {
             responseObserver.onError(INVALID_ARGUMENT.withDescription("Type cannot be empty!").asRuntimeException());
@@ -228,32 +226,20 @@ public class SiloServerImpl extends SauronImplBase {
             final StreamObserver<CameraRegistrationResponse> responseObserver) {
 
         String name = request.getName();
-        Vector<Integer> otherTS = _replicaManager.generateOtherTS(request.getTsList());
 
         if (name.isBlank()) // Check name exists
             responseObserver.onError(INVALID_ARGUMENT.withDescription("Name cannot be empty!").asRuntimeException());
         else if (name.length() > 15 || name.length() < 3) // Check name size
             responseObserver.onError(INVALID_ARGUMENT.withDescription("Name length is illegal!").asRuntimeException());
-        else if (!_replicaManager.canUpdate(otherTS)) {
-            CameraRegistrationResponse.Builder responseBuilder = CameraRegistrationResponse.newBuilder();
-            _replicaManager.queueCamRegisterRequest(request);
-
-            Vector<Integer> valueTS = _replicaManager.getTS();
-            responseBuilder.addAllTs(valueTS);
-
-            final CameraRegistrationResponse response = responseBuilder.build();
-            responseObserver.onNext(response);
-            responseObserver.onCompleted();
-        } else {
+        else {
             try {
                 _siloServer.registerCamera(name, request.getLatitude(), request.getLongitude());
                 _replicaManager.logCamRegisterRequest(request);
 
                 CameraRegistrationResponse.Builder responseBuilder = CameraRegistrationResponse.newBuilder();
 
-                Vector<Integer> valueTS = _replicaManager.update(otherTS);
-                for (int ts : valueTS)
-                    responseBuilder.addTs(ts);
+                Vector<Integer> valueTS = _replicaManager.update();
+                responseBuilder.addAllTs(valueTS);
 
                 final CameraRegistrationResponse response = responseBuilder.build();
                 responseObserver.onNext(response);
@@ -269,7 +255,6 @@ public class SiloServerImpl extends SauronImplBase {
     public void camInfo(final CameraInfoRequest request, final StreamObserver<CameraInfoResponse> responseObserver) {
         String name = request.getName();
         Camera cam;
-        Vector<Integer> otherTS = _replicaManager.generateOtherTS(request.getTsList());
 
         if (name.isBlank()) // Check name exists
             responseObserver.onError(INVALID_ARGUMENT.withDescription("Name cannot be empty!").asRuntimeException());
@@ -295,31 +280,23 @@ public class SiloServerImpl extends SauronImplBase {
 
     @Override
     public void report(final ReportRequest request, final StreamObserver<ReportResponse> responseObserver) {
+        System.out.println("1");
         String cameraName = request.getCameraName();
-        Vector<Integer> otherTS = _replicaManager.generateOtherTS(request.getTsList());
 
         // check if camera name is legit
         if (!_siloServer.hasCamera(cameraName)) {
             responseObserver.onError(INVALID_ARGUMENT.withDescription("No such camera").asRuntimeException());
-        } else if (!_replicaManager.canUpdate(otherTS)) {
-            ReportResponse.Builder responseBuilder = ReportResponse.newBuilder();
-            _replicaManager.queueReport(request);
-
-            Vector<Integer> valueTS = _replicaManager.getTS();
-            responseBuilder.addAllTs(valueTS);
-
-            ReportResponse response = responseBuilder.build();
-            responseObserver.onNext(response);
-            responseObserver.onCompleted();
         } else {
             // get reports
             List<ReportItem> items = request.getReportsList();
             ReportResponse.Builder responseBuilder = ReportResponse.newBuilder();
 
             // get message timestamp
-            Vector<Integer> valueTS = _replicaManager.update(otherTS);
-            for (int ts : valueTS)
-                responseBuilder.addTs(ts);
+            Vector<Integer> valueTS = _replicaManager.update();
+            responseBuilder.addAllTs(valueTS);
+
+            // Create timestamp
+            LocalDateTime timestamp = LocalDateTime.now();
 
             // process report items
             for (ReportItem item : items) {
@@ -332,10 +309,10 @@ public class SiloServerImpl extends SauronImplBase {
                     responseBuilder.addFailures(FailureItem.newBuilder() // invalid id
                             .setType(type).setId(id).setMessage("Invalid id '" + id + "' for type " + type).build());
                 } else { // register report
-                    _siloServer.reportObservation(cameraName, type, id);
+                    _siloServer.reportObservation(cameraName, type, id, timestamp);
                 }
             }
-            _replicaManager.logReport(request);
+            _replicaManager.logReport(request, timestamp);
 
             // build response message
             ReportResponse response = responseBuilder.build();

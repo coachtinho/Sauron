@@ -3,6 +3,7 @@ package pt.tecnico.sauron.silo.domain;
 import java.util.List;
 import java.util.LinkedList;
 import java.lang.String;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -102,11 +103,11 @@ public class SiloServer {
         return true;
     }
 
-    public void reportObservation(String cameraName, String type, String id) {
+    public void reportObservation(String cameraName, String type, String id, LocalDateTime timestamp) {
         Camera camera = _cameras.get(cameraName);
         switch (type) {
             case "person":
-                Person person = new Person(id, camera);
+                Person person = new Person(id, camera, timestamp);
                 if (_people.containsKey(id)) {
                     // Just add the observation
                     _people.get(id).add(0, person);
@@ -118,7 +119,7 @@ public class SiloServer {
                 }
                 break;
             case "car":
-                Car car = new Car(id, camera);
+                Car car = new Car(id, camera, timestamp);
                 if (_cars.containsKey(id)) {
                     // Just add the observation
                     _cars.get(id).add(0, car);

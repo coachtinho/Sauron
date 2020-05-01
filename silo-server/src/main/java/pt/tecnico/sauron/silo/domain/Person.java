@@ -1,13 +1,14 @@
 package pt.tecnico.sauron.silo.domain;
 
 import java.lang.String;
+import java.time.LocalDateTime;
 
 public class Person extends Observation {
 
     String _id;
 
-    public Person(String id, Camera cam) {
-        super(cam);
+    public Person(String id, Camera cam, LocalDateTime timestamp) {
+        super(cam, timestamp);
         _id = id;
     }
 
