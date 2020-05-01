@@ -1,12 +1,13 @@
 package pt.tecnico.sauron.silo.client;
 
 import java.util.Collection;
+import java.util.List;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
-
 import static io.grpc.Status.Code.UNAVAILABLE;
+
 import pt.tecnico.sauron.silo.grpc.SauronGrpc;
 import pt.tecnico.sauron.silo.grpc.Silo.*;
 import pt.ulisboa.tecnico.sdis.zk.ZKNaming;
@@ -19,12 +20,15 @@ public class SiloFrontend {
     static final int TRIES = 3;
     static final int BASE_WAIT = 2000;
     static final int MULTIPLIER = 2000;
+    static final long CACHE_SIZE = 50;
 
     ManagedChannel channel;
     SauronGrpc.SauronBlockingStub stub;
     ZKNaming zkNaming;
-    String target; // Replica URI
-    String instance; // Replica to contact
+    String target; //Replica URI
+    String instance; //Replica to contact
+    List prevTS;
+
 
     public SiloFrontend(String host, String port, String instance) throws SiloFrontendException {
         this.zkNaming = new ZKNaming(host, port);
@@ -33,7 +37,6 @@ public class SiloFrontend {
         // If instance is not specified, connects to random replica
         if (this.instance == null) {
             connectToRandomReplica();
-            System.out.println("");
         }
 
         // If instance is specified, connects to specified replica
