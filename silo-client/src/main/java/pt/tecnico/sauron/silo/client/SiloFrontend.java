@@ -1,6 +1,7 @@
 package pt.tecnico.sauron.silo.client;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 
 import io.grpc.ManagedChannel;
@@ -20,15 +21,19 @@ public class SiloFrontend {
     static final int TRIES = 3;
     static final int BASE_WAIT = 2000;
     static final int MULTIPLIER = 2000;
-    static final long CACHE_SIZE = 50;
+    static final long CACHE_SIZE = 50; // number of request response pairs each cache can hold
 
     ManagedChannel channel;
     SauronGrpc.SauronBlockingStub stub;
     ZKNaming zkNaming;
     String target; //Replica URI
     String instance; //Replica to contact
-    List prevTS;
 
+    //Caches
+    HashMap<CameraInfoRequest, CameraInfoResponse> cameraInfoCache = new HashMap<CameraInfoRequest, CameraInfoResponse>();
+    HashMap<TrackRequest, TrackResponse> trackCache = new HashMap<TrackRequest, TrackResponse>();
+    HashMap<TrackMatchRequest, TrackMatchResponse> trackMatchCache = new HashMap<TrackMatchRequest, TrackMatchResponse>();
+    HashMap<TraceRequest, TraceResponse> traceCache = new HashMap<TraceRequest, TraceResponse>();
 
     public SiloFrontend(String host, String port, String instance) throws SiloFrontendException {
         this.zkNaming = new ZKNaming(host, port);
@@ -101,7 +106,32 @@ public class SiloFrontend {
         int numTries = 0;
         while (true) {
             try {
-                return stub.camInfo(request);
+                CameraInfoResponse response = stub.camInfo(request);
+                System.out.println(response.getTsList());
+
+                // If we have this request cached
+                if (this.trackCache.containsKey(request)) {
+
+                    // If response timestamp is greater or equal, replaces the cached response
+                    if (greaterThan(response.getTsList(), this.trackCache.get(request).getTsList())) {
+                        System.out.println("novo!!");
+                        this.cameraInfoCache.put(request, response);
+                        return response;
+                    }
+
+                    // Else, returns cached response
+                    else {
+                        System.out.println("velho!!");
+                        return this.cameraInfoCache.get(request);
+                    }
+                } 
+                
+                // Else, Caches response
+                else {
+                    System.out.println("não tou ca dentro");
+                    this.cameraInfoCache.put(request, response);
+                    return response;
+                }
             } catch (StatusRuntimeException e) {
                 if (e.getStatus().getCode() != UNAVAILABLE) {
                     // Let client handle the exception
@@ -163,7 +193,32 @@ public class SiloFrontend {
         int numTries = 0;
         while (true) {
             try {
-                return stub.track(request);
+                TrackResponse response = stub.track(request);
+                System.out.println(response.getTsList());
+
+                // If we have this request cached
+                if (this.trackCache.containsKey(request)) {
+
+                    // If response timestamp is greater or equal, replaces the cached response
+                    if (greaterThan(response.getTsList(), this.trackCache.get(request).getTsList())) {
+                        System.out.println("novo!!");
+                        this.trackCache.put(request, response);
+                        return response;
+                    }
+
+                    // Else, returns cached response
+                    else {
+                        System.out.println("velho!!");
+                        return this.trackCache.get(request);
+                    }
+                } 
+                
+                // Else, Caches response
+                else {
+                    System.out.println("não tou ca dentro");
+                    this.trackCache.put(request, response);
+                    return response;
+                }
             } catch (StatusRuntimeException e) {
                 if (e.getStatus().getCode() != UNAVAILABLE) {
                     // Let client handle the exception
@@ -194,7 +249,32 @@ public class SiloFrontend {
         int numTries = 0;
         while (true) {
             try {
-                return stub.trackMatch(request);
+                TrackMatchResponse response = stub.trackMatch(request);
+                System.out.println(response.getTsList());
+
+                // If we have this request cached
+                if (this.trackMatchCache.containsKey(request)) {
+
+                    // If response timestamp is greater or equal, replaces the cached response
+                    if (greaterThan(response.getTsList(), this.trackMatchCache.get(request).getTsList())) {
+                        System.out.println("novo!!");
+                        this.trackMatchCache.put(request, response);
+                        return response;
+                    }
+
+                    // Else, returns cached response
+                    else {
+                        System.out.println("velho!!");
+                        return this.trackMatchCache.get(request);
+                    }
+                } 
+                
+                // Else, Caches response
+                else {
+                    System.out.println("não tou ca dentro");
+                    this.trackMatchCache.put(request, response);
+                    return response;
+                }
             } catch (StatusRuntimeException e) {
                 if (e.getStatus().getCode() != UNAVAILABLE) {
                     // Let client handle the exception
@@ -225,7 +305,32 @@ public class SiloFrontend {
         int numTries = 0;
         while (true) {
             try {
-                return stub.trace(request);
+                TraceResponse response = stub.trace(request);
+                System.out.println(response.getTsList());
+
+                // If we have this request cached
+                if (this.traceCache.containsKey(request)) {
+
+                    // If response timestamp is greater or equal, replaces the cached response
+                    if (greaterThan(response.getTsList(), this.traceCache.get(request).getTsList())) {
+                        System.out.println("novo!!");
+                        this.traceCache.put(request, response);
+                        return response;
+                    }
+
+                    // Else, returns cached response
+                    else {
+                        System.out.println("velho!!");
+                        return this.traceCache.get(request);
+                    }
+                } 
+                
+                // Else, Caches response
+                else {
+                    System.out.println("não tou ca dentro");
+                    this.traceCache.put(request, response);
+                    return response;
+                }
             } catch (StatusRuntimeException e) {
                 if (e.getStatus().getCode() != UNAVAILABLE) {
                     // Let client handle the exception
@@ -273,9 +378,7 @@ public class SiloFrontend {
                 record = getRandom(records);
                 this.target = record.getURI();
                 // Close the old channel
-                if (this.channel != null) {
-                    this.close();
-                }
+                this.close();
                 this.channel = ManagedChannelBuilder.forTarget(target).usePlaintext().build();
                 this.stub = SauronGrpc.newBlockingStub(channel);
                 // We test to see if the replica is alive before commiting
@@ -307,6 +410,15 @@ public class SiloFrontend {
             }
         }
         return null;
+    }
+
+    private boolean greaterThan(List<Integer> valueTS, List<Integer> prevTS) {
+        for (int i = 0; i < valueTS.size(); i++) {
+            if (valueTS.get(i).intValue() < prevTS.get(i).intValue()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public void close() {

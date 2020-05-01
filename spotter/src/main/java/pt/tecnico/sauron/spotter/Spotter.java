@@ -1,7 +1,6 @@
 package pt.tecnico.sauron.spotter;
 
-import pt.tecnico.sauron.silo.client.SiloFrontend;
-import pt.tecnico.sauron.silo.client.SiloFrontendException;
+import pt.tecnico.sauron.silo.client.*;
 import pt.tecnico.sauron.silo.grpc.Silo.ClearRequest;
 import pt.tecnico.sauron.silo.grpc.Silo.InitRequest;
 import pt.tecnico.sauron.silo.grpc.Silo.PingRequest;
@@ -21,7 +20,6 @@ import java.util.List;
 import com.google.protobuf.Timestamp;
 
 import io.grpc.StatusRuntimeException;
-import io.grpc.Status.Code;
 
 public class Spotter {
 
