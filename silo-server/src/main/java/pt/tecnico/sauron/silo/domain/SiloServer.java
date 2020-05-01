@@ -96,9 +96,18 @@ public class SiloServer {
         return list;
     }
 
+    // Helper function to compare camera's coords with new camera coords
+    private boolean compareCoords(Camera cam, double newLat, double newLong) {
+        return cam.getLatitude() == newLat && cam.getLongitude() == newLong;
+    }
+
     public boolean registerCamera(String name, double latitude, double longitude) {
         if (_cameras.containsKey(name))
-            throw new SiloException(ErrorMessage.CAMERA_ALREADY_EXISTS);
+            if (!compareCoords(_cameras.get(name), latitude, longitude))
+                throw new SiloException(ErrorMessage.CAMERA_ALREADY_EXISTS);
+            else
+                return true;
+
         _cameras.put(name, new Camera(name, latitude, longitude));
         return true;
     }
