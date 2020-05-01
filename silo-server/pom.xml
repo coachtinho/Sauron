@@ -20,6 +20,8 @@
 		<!-- instance number -->
 		<instance>1</instance>
 
+		<replicaCount>1</replicaCount>
+
 		<server.host>localhost</server.host>
 		<server.port>808${instance}</server.port>
 		<server.path>/grpc/sauron/silo/${instance}</server.path>
@@ -34,7 +36,7 @@
 			<artifactId>zk-naming</artifactId>
 			<version>1.0.3</version>
 		</dependency>
-		
+
 		<!-- contract brings gRPC dependencies with it -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
@@ -86,6 +88,7 @@
 						<argument>${instance}</argument>
 						<argument>${server.host}</argument>
 						<argument>${server.port}</argument>
+						<argument>${replicaCount}</argument>
 					</arguments>
 				</configuration>
 			</plugin>

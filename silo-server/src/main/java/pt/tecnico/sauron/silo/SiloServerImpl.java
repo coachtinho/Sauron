@@ -280,7 +280,6 @@ public class SiloServerImpl extends SauronImplBase {
 
     @Override
     public void report(final ReportRequest request, final StreamObserver<ReportResponse> responseObserver) {
-        System.out.println("1");
         String cameraName = request.getCameraName();
 
         // check if camera name is legit

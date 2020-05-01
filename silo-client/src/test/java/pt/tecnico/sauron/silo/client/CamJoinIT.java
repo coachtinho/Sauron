@@ -4,7 +4,6 @@ import static io.grpc.Status.INVALID_ARGUMENT;
 import static org.junit.Assert.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-
 import org.junit.jupiter.api.*;
 
 import io.grpc.StatusRuntimeException;
@@ -12,7 +11,6 @@ import pt.tecnico.sauron.silo.grpc.Silo.CameraRegistrationRequest;
 import pt.tecnico.sauron.silo.grpc.Silo.CameraRegistrationResponse;
 import pt.tecnico.sauron.silo.grpc.Silo.ClearRequest;
 import pt.tecnico.sauron.silo.grpc.Silo.InitRequest;
-
 
 public class CamJoinIT extends BaseIT {
     // static members
@@ -45,13 +43,13 @@ public class CamJoinIT extends BaseIT {
         ClearRequest request = ClearRequest.getDefaultInstance();
         frontend.ctrlClear(request);
     }
-	
+
     // tests
-    
+
     @Test
     public void camJoinOKTest() throws SiloFrontendException {
-        CameraRegistrationRequest request = CameraRegistrationRequest.newBuilder()
-                .setName("Camera2") //
+        CameraRegistrationRequest request = CameraRegistrationRequest.newBuilder(). //
+				setName("Camera2") //
                 .setLatitude(123.45) //
                 .setLongitude(678.91) //
                 .build();
@@ -61,12 +59,12 @@ public class CamJoinIT extends BaseIT {
 
     @Test
     public void camJoinNoNameTest() throws SiloFrontendException {
-        CameraRegistrationRequest request = CameraRegistrationRequest.newBuilder()
-                .setLatitude(123.45) //
+        CameraRegistrationRequest request = CameraRegistrationRequest.newBuilder() //
+				.setLatitude(123.45) //
                 .setLongitude(678.91) //
                 .build();
-        Exception exception = assertThrows(StatusRuntimeException.class, () -> frontend.camJoin(request));        
-        assertEquals(INVALID_ARGUMENT.asRuntimeException().getClass(), exception.getClass());        
+        Exception exception = assertThrows(StatusRuntimeException.class, () -> frontend.camJoin(request));
+        assertEquals(INVALID_ARGUMENT.asRuntimeException().getClass(), exception.getClass());
         String expectedMessage = "Name cannot be empty!";
         String actualMessage = exception.getMessage();
         assertTrue(actualMessage.contains(expectedMessage));
@@ -74,13 +72,13 @@ public class CamJoinIT extends BaseIT {
 
     @Test
     public void camJoinShortNameTest() throws SiloFrontendException {
-        CameraRegistrationRequest request = CameraRegistrationRequest.newBuilder()
-                .setName("ab") //
+        CameraRegistrationRequest request = CameraRegistrationRequest.newBuilder() //
+				.setName("ab") //
                 .setLatitude(123.45) //
                 .setLongitude(678.91) //
                 .build();
-        Exception exception = assertThrows(StatusRuntimeException.class, () -> frontend.camJoin(request));        
-        assertEquals(INVALID_ARGUMENT.asRuntimeException().getClass(), exception.getClass());        
+        Exception exception = assertThrows(StatusRuntimeException.class, () -> frontend.camJoin(request));
+        assertEquals(INVALID_ARGUMENT.asRuntimeException().getClass(), exception.getClass());
         String expectedMessage = "Name length is illegal!";
         String actualMessage = exception.getMessage();
         assertTrue(actualMessage.contains(expectedMessage));
@@ -88,30 +86,40 @@ public class CamJoinIT extends BaseIT {
 
     @Test
     public void camJoinLongNameTest() throws SiloFrontendException {
-        CameraRegistrationRequest request = CameraRegistrationRequest.newBuilder()
-                .setName("abcdefghijklmnop") //
+        CameraRegistrationRequest request = CameraRegistrationRequest.newBuilder() //
+				.setName("abcdefghijklmnop") //
                 .setLatitude(123.45) //
                 .setLongitude(678.91) //
                 .build();
-        Exception exception = assertThrows(StatusRuntimeException.class, () -> frontend.camJoin(request));        
-        assertEquals(INVALID_ARGUMENT.asRuntimeException().getClass(), exception.getClass());        
+        Exception exception = assertThrows(StatusRuntimeException.class, () -> frontend.camJoin(request));
+        assertEquals(INVALID_ARGUMENT.asRuntimeException().getClass(), exception.getClass());
         String expectedMessage = "Name length is illegal!";
         String actualMessage = exception.getMessage();
         assertTrue(actualMessage.contains(expectedMessage));
     }
 
     @Test
-    public void camJoinDuplicateTest() throws SiloFrontendException {
+    public void camJoinDuplicateNameTest() throws SiloFrontendException {
         String name = testProps.getProperty("camera.name");
-        CameraRegistrationRequest request = CameraRegistrationRequest.newBuilder()
-                .setName(name) //
+        CameraRegistrationRequest request = CameraRegistrationRequest.newBuilder()//
+				.setName(name) //
                 .setLatitude(123.45) //
                 .setLongitude(678.91) //
                 .build();
-        Exception exception = assertThrows(StatusRuntimeException.class, () -> frontend.camJoin(request));        
-        assertEquals(INVALID_ARGUMENT.asRuntimeException().getClass(), exception.getClass());        
+        Exception exception = assertThrows(StatusRuntimeException.class, () -> frontend.camJoin(request));
+        assertEquals(INVALID_ARGUMENT.asRuntimeException().getClass(), exception.getClass());
         String expectedMessage = "Camera already exists!";
         String actualMessage = exception.getMessage();
         assertTrue(actualMessage.contains(expectedMessage));
+    }
+
+    @Test
+    public void camJoinDuplicateCameraTest() throws SiloFrontendException {
+        String name = testProps.getProperty("camera.name");
+        CameraRegistrationRequest request = CameraRegistrationRequest.newBuilder().setName(name) //
+                .setLatitude(678.91) //
+                .setLongitude(123.45) //
+                .build();
+        assertNotNull(frontend.camJoin(request));
     }
 }

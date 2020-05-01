@@ -3,7 +3,6 @@ package pt.tecnico.sauron.silo;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Vector;
@@ -14,18 +13,19 @@ import java.util.concurrent.TimeUnit;
 import com.google.protobuf.Timestamp;
 
 import io.grpc.stub.StreamObserver;
+import pt.tecnico.sauron.silo.domain.ReplicaFrontend;
+import pt.tecnico.sauron.silo.domain.SiloException;
+import pt.tecnico.sauron.silo.domain.SiloServer;
+import pt.tecnico.sauron.silo.grpc.GossipGrpc.GossipImplBase;
 import pt.tecnico.sauron.silo.grpc.Silo.CameraRegistrationRequest;
 import pt.tecnico.sauron.silo.grpc.Silo.GossipRequest;
 import pt.tecnico.sauron.silo.grpc.Silo.GossipResponse;
 import pt.tecnico.sauron.silo.grpc.Silo.ReportRequest;
 import pt.tecnico.sauron.silo.grpc.Silo.ReportRequest.ReportItem;
-import pt.tecnico.sauron.silo.domain.ReplicaFrontend;
-import pt.tecnico.sauron.silo.domain.SiloException;
-import pt.tecnico.sauron.silo.domain.SiloServer;
-import pt.tecnico.sauron.silo.grpc.GossipGrpc.GossipImplBase;
 
 public class ReplicaManager extends GossipImplBase {
-    private final int GOSSIP_INTERVAL = 5;
+    private final int GOSSIP_INTERVAL = 30;
+    private final int _replicaCount;
     private final int _instance;
     private Vector<Integer> _TS;
     private final SiloServer _siloServer;
@@ -38,11 +38,12 @@ public class ReplicaManager extends GossipImplBase {
     // frontend
     ReplicaFrontend _frontend;
 
-    public ReplicaManager(int instance, String zooHost, String zooPort, SiloServer siloServer) {
+    public ReplicaManager(int replicaCount, int instance, String zooHost, String zooPort, SiloServer siloServer) {
+        _replicaCount = replicaCount;
         _instance = instance;
         _siloServer = siloServer;
         _TS = new Vector<Integer>();
-        for (int i = 0; i < instance; i++) {
+        for (int i = 0; i < replicaCount; i++) {
             _TS.add(0);
         }
         _reportLog = new Vector<>();
@@ -107,28 +108,27 @@ public class ReplicaManager extends GossipImplBase {
         return _TS;
     }
 
-    public void applyUpdate() {
-        boolean updates;
-        do {
-            updates = false;
+    public void applyUpdate(List<Integer> newTS) {
 
-            // Apply camera registration requests
+        // Apply camera registration requests
+        synchronized (_camJoinQueue) {
             for (int i = _camJoinQueue.size() - 1; i >= 0; i--) {
-                updates = true;
+
                 CameraRegistrationRequest c = _camJoinQueue.get(i);
                 _camJoinQueue.remove(c);
                 try {
                     _siloServer.registerCamera(c.getName(), c.getLatitude(), c.getLongitude());
                 } catch (SiloException e) {
-                    // TODO: throw something
+                    System.out.println("Corrupted camera registration request!");
                 } finally {
-                    update();
                 }
             }
+        }
 
-            // Apply report requests
+        // Apply report requests
+        synchronized (_reportQueue) {
             for (int i = _reportQueue.size() - 1; i >= 0; i--) {
-                updates = true;
+
                 ReportRequest r = _reportQueue.get(i);
                 _reportQueue.remove(r);
                 List<ReportItem> items = r.getReportsList();
@@ -140,9 +140,18 @@ public class ReplicaManager extends GossipImplBase {
                     if (_siloServer.isValidType(type) && _siloServer.isValidId(type, id))
                         _siloServer.reportObservation(cameraName, type, id, timestamp);
                 }
-                update();
             }
-        } while (updates);
+        }
+
+        // Update server TS
+        synchronized (_TS) {
+            for (int i = 0; i < _TS.size(); i++) {
+                int myVal = _TS.get(i);
+                int newVal = newTS.get(i);
+                if (newVal > myVal)
+                    _TS.set(i, newVal);
+            }
+        }
 
     }
 
@@ -190,7 +199,7 @@ public class ReplicaManager extends GossipImplBase {
         _reportQueue.addAll(newReports);
 
         // apply queue
-        this.applyUpdate();
+        this.applyUpdate(request.getTsList());
 
         GossipResponse response = GossipResponse.newBuilder().build();
 

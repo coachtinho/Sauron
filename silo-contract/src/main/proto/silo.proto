@@ -25,6 +25,20 @@ message ClearRequest {
 message ClearResponse {
 }
 
+
+
+
+
+
+
+// TODO: string type -> enum e  string id -> int
+
+
+
+
+
+
+
 message ReportRequest {  
     message ReportItem {
         string type = 1;
@@ -32,7 +46,7 @@ message ReportRequest {
     }
     string cameraName = 1;
     google.protobuf.Timestamp timestamp = 2;
-    repeated ReportItem reports = 3;    
+    repeated ReportItem reports = 3;
 }
 
 message ReportResponse {
@@ -105,7 +119,8 @@ message CameraInfoResponse {
 
 message GossipRequest {
     repeated CameraRegistrationRequest cameras = 1;
-    repeated ReportRequest reports = 2;    
+    repeated ReportRequest reports = 2;
+    repeated int32 ts = 3;
 }
 
 message GossipResponse {    

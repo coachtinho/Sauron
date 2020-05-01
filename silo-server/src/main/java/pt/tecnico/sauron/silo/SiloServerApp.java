@@ -28,10 +28,11 @@ public class SiloServerApp {
         final int instance = Integer.parseInt(args[2]);
         final String serverHost = args[3];
         final Integer serverPort = Integer.parseInt(args[4]);
+        final Integer replicaCount = Integer.parseInt(args[5]);
 
         // Dependencies
         final SiloServer silo = new SiloServer();
-        final ReplicaManager replicaManager = new ReplicaManager(instance, zooHost, zooPort, silo);
+        final ReplicaManager replicaManager = new ReplicaManager(replicaCount, instance, zooHost, zooPort, silo);
 
         // Bind grpc implementations
         final String path = "/grpc/sauron/silo/" + instance;
@@ -57,8 +58,7 @@ public class SiloServerApp {
             new Thread(() -> {
                 System.out.println("<Press enter to shutdown>");
                 new Scanner(System.in).nextLine();
-
-                server.shutdownNow();
+                server.shutdown();
             }).start();
 
             // Do not exit the main thread. Wait until server is terminated.
