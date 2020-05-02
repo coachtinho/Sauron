@@ -1,250 +1,359 @@
 # Sauron demonstration
 
-## Get started
+## 1. Preparação do Sistema
 
-This is a Sauron application where 2 different clients: **eye** and **spotter** can send data to server.
+Para testar a aplicação e todos os seus componentes, é necessário preparar um ambiente com dados para proceder à verificação dos testes.
 
-## Step 0: Install project
+### 1.1. Compilar o Projeto
 
-To install, open a shell on the root folder and run:
-
-```
-mvn clean install -DskipTests
-```
-
-## Step 1: Run server
-
-To compile and run using _exec_ plugin:
+Para compilar todos os módulos do projeto, abrir uma *shell* na pasta *root* do projeto e correr:
 
 ```
-cd silo-server/
-mvn exec:java
+$ mvn clean install -DskipTests
 ```
 
-Make sure you see the following output:
+Verifique que o projeto compila na íntegra (não existem erros de compilação).
+
+### 1.2. *Silo*
+
+Para correr os testes é necessário que exista um servidor a correr.
+Para iniciar o servidor:
+
+```
+$ cd silo-server/
+$ mvn exec:java -Dinstance="1"
+```
+
+Se vir este *output* então o server foi inicializado corretamente:
 
 ```
 SiloServerApp
-Received 1 arguments
-arg[0] = 8080
+Received 6 arguments
+arg[0] = localhost
+arg[1] = 2181
+arg[2] = 1
+arg[3] = localhost
+arg[4] = 8081
+arg[5] = 1
 Server started
+<Press enter to shutdown>
 ```
 
-## Step 2: Run eye
+### 1.3. *Eye*
 
-Open a new shell and make sure you are on the project's root folder.
-
-To populate server with data:
+Para testar o cliente eye corra abra uma nova *shell* na pasta *root* do projeto.
+corra:
 
 ```
-cd eye
-mvn exec:java < ../demo/Data/input.txt
+$ cd eye/
 ```
 
-If you see this output then the server has been correctly initialized:
+Vamos inicializar o sevidor com 2 câmeras diferentes e com as respetivas observações.
+Para isso e preciso correr:
+
+
+```
+$ mvn exec:java -Dexec.args="localhost 2181 Alameda -25.284736 30.621354 1" < ../demo/Data/input1.txt
+```
+
+Se vir este *output* então a primeira câmera e os seus reports foram registados corretamente:
 
 ```
 EyeApp
-Received 5 arguments
+Received 6 arguments
 arg[0] = localhost
-arg[1] = 8080
+arg[1] = 2181
 arg[2] = Alameda
 arg[3] = -25.284736
 arg[4] = 30.621354
-localhost:8080
+arg[5] = 1
+Connected to specified replica at localhost:8081
 Camera was sucessfully registered
-Sucessfully reported 7 items
+Sucessfully reported 9 items
 Sucessfully reported 6 items
 Exiting...
 ```
 
-## Step 3: Run spotter
+E para a segunda câmera é preciso correr:
 
 ```
-cd ../spotter/
-mvn exec:java
+$ mvn exec:java -Dexec.args="localhost 2181 Tagus -25.284736 30.621354 1" < ../demo/Data/input2.txt
 ```
 
-Make sure you see the following output:
+Se vir este *output* então a segunda câmera e os seus reports foram registados corretamente:
 
 ```
-SpotterApp
-Received 2 arguments
+EyeApp
+Received 6 arguments
 arg[0] = localhost
-arg[1] = 8080
-localhost:8080
+arg[1] = 2181
+arg[2] = Tagus
+arg[3] = -25.284736
+arg[4] = 30.621354
+arg[5] = 1
+Connected to specified replica at localhost:8081
+Camera was sucessfully registered
+Sucessfully reported 3 items
+Sucessfully reported 2 items
 ```
 
-### Help:
+Depois de executar os comandos acima já temos o que é necessário para testar o sistema. 
 
-To access information about the supported commands write:
+## 2. Teste das Operações
 
-```
-help
-```
+Nesta secção vamos correr os comandos necessários para testar todas as operações. 
+Cada subsecção é respetiva a cada operação presente no *silo*.
 
-Make sure you see the following output:
+### 2.1. *cam_join*
 
-```
-Spot: shows information regarding observations of the objects with identifiers that match with id
-   Usage: spotter objectType id
-Trail: shows the path taken by the object with id
-   Usage: trail objectType id
-Ping: shows information regarding the state of server
-   Usage: ping
-Clear: cleans server state
-   Usage: clear
-Init: configures server
-   Usage: init
-Help: shows commands supported by application
-   Usage: help
-Exit: exits the application
-   Usage: exit
-```
+Esta operação já foi testada na preparação do ambiente, no entanto ainda é necessário testar algumas restrições.
 
-### Init
-
-Then, to add some test observations to the server, run the init command:
+2.1.1. Teste das câmeras com nome duplicado e coordenadas diferentes.  
+Para realizar este teste é preciso correr:
 
 ```
-init
+$ mvn exec:java -Dexec.args="localhost 2181 Tagus 1 2 1"
 ```
 
-Make sure you see the following output:
+Este teste deve dar o seguinte erro:
 
 ```
-Server initialized
+Camera with this name already exists
 ```
 
-### Spot
-
-To get information about the most recent observation of the person with id 5638246, you can run the command:
-
-```
-spot person 5638246
-```
-
-Make sure you see the following output:
+2.1.2. Teste do tamanho do nome.  
+Para realizar este teste é preciso correr:
 
 ```
-person,5638246,2020-04-03T12:13:39,Alameda,-25,284736,30,621354
+$ mvn exec:java -Dexec.args="localhost 2181 a 1 2 1"
+$ mvn exec:java -Dexec.args="localhost 2181 aadadasdadasdasdasd 1 2 1"
 ```
 
-Now with a car:
+Ambos os testes devem imprimir o erro:
 
 ```
-spot car 20SD23
+Caught exception with code INVALID_ARGUMENT and description: INVALID_ARGUMENT: Name length is illegal!
 ```
 
-Make sure you see the following output:
+### 2.2. *cam_info*
+
+Esta operação não tem nenhum comando específico associado e portanto apenas é testável com os testes de integração (Ver no fim como executar).
+
+### 2.3. *report*
+
+Para as próximas operações é necessário ter um cliente spotter ligado. Para isso deve executar:
 
 ```
-car,20SD23,2020-04-03T12:13:36,Alameda,-25,284736,30,621354
+$ cd ../spotter/
+$ mvn exec:java -Dexec.args="localhost 2181 1"
 ```
 
-If you try with a person that doesn't exist:
+Se vir o seguinte *output* então o cliente spotter foi lançado corretamente.
+
+```
+Received 3 arguments
+arg[0] = localhost
+arg[1] = 2181
+arg[2] = 1
+Connected to specified replica at localhost:8081
+```
+
+Esta operação já foi testada acima na preparação do ambiente, mas no entanto falta testar o sucesso do comando *zzz*.
+Para isso corra: 
+
+```
+trail car 20SD30
+```
+
+O resultado desta operação deve ser:
+
+```
+car,20SD30,2020-05-02T12:15:10,Tagus,-25.284736,30.621354
+car,20SD30,2020-05-02T12:15:05,Tagus,-25.284736,30.621354
+```
+
+**ATENÇÃO:** as datas não serão as mesmas, o importante é notar a diferença de 5 segundos entre a primeira e a segunda observação
+
+### 2.4. *track*
+
+Esta operação vai ser testada utilizando o comando *spot* com um identificador.
+
+2.4.1. Teste com uma pessoa que não exista:
 
 ```
 spot person 1
 ```
 
-Make sure there is no output.
+não deve ser imprimido nenhum output
 
-If you try with an invalid car ID: (like _1_):
-
-```
-spot car 1
-```
-
-you should get the following error:
+2.4.2. Teste com uma pessoa:
 
 ```
-Caught exception with code INVALID_ARGUMENT and description: INVALID_ARGUMENT: Car ID doesn't match rules
+> spot person 5638246
+person,5638246,<timestamp>,Alameda,-25.284736,30.621354
 ```
 
-To get the most recent observation of all the people whose id start with _5_:
+2.4.3. Teste com um carro:
 
 ```
-spot person 5*
+> spot car 20SD23
+car,20SD23,<timestamp>,Tagus,-25.284736,30.621354
 ```
 
-Make sure you see the following output:
+### 2.5. *trackMatch*
+
+Esta operação vai ser testada utilizando o comando *spot* com um fragmento de identificador.
+
+2.5.1. Teste com uma pessoa que não exista:
 
 ```
-person,5111111,2020-04-03T12:31:29,Alameda,-25.284736,30.621354
-person,5111112,2020-04-03T12:31:26,Alameda,-25.284736,30.621354
-person,5112112,2020-04-03T12:31:26,Alameda,-25.284736,30.621354
-person,5638246,2020-04-03T12:31:29,Alameda,-25.284736,30.621354
+> spot person 4321*
 ```
 
-To get the most recent observations of all the cars whose license plate start with _1_ and also ends with _1_:
+não deve ser imprimido nada.
+
+2.5.2. Testes com uma pessoa:
 
 ```
-spot car 1*1
+> spot person 563824* 
+person,5638246,<timestamp>,Alameda,-25.284736,30.621354
+
+> spot person *638246
+person,5638246,<timestamp>,Alameda,-25.284736,30.621354
+
+> spot person 563*246
+person,5638246,<timestamp>,Alameda,-25.284736,30.621354
 ```
 
-Make sure you see the following output:
+2.5.3. Testes com duas ou mais pessoas:
 
 ```
-car,10SD21,2020-04-03T12:31:26,Alameda,-25.284736,30.621354
+> spot person 51*
+person,5111111,<timestamp>,Tagus,-25.284736,30.621354
+person,5111112,<timestamp>,Alameda,-25.284736,30.621354
+person,5112112,<timestamp>,Alameda,-25.284736,30.621354
+
+> spot person *2
+person,5111112,<timestamp>,Alameda,-25.284736,30.621354
+person,5112112,<timestamp>,Alameda,-25.284736,30.621354
+
+> spot person 511*112
+person,5111112,<timestamp>,Alameda,-25.284736,30.621354
+person,5112112,<timestamp>,Alameda,-25.284736,30.621354
 ```
 
-To get the most recent observations of all the people whose id ends with _2_
+2.5.4. Testes com um carro:
 
 ```
-spot person *2
+> spot car 20SD3*
+car,20SD30,<timestamp>,Tagus,-25.284736,30.621354
+
+> spot car *0SD30
+car,20SD30,<timestamp>,Tagus,-25.284736,30.621354
+
+> spot car 20*D30
+car,20SD30,<timestamp>,Tagus,-25.284736,30.621354
 ```
 
-Make sure you see the following output:
+2.5.5. Testes com dois ou mais carros:
 
 ```
-person,5111112,2020-04-03T12:31:26,Alameda,-25.284736,30.621354
-person,5112112,2020-04-03T12:31:26,Alameda,-25.284736,30.621354
-```
+> spot car 20SD*
+car,20SD21,<timestamp>,Alameda,-25.284736,30.621354
+car,20SD23,<timestamp>,Tagus,-25.284736,30.621354
+car,20SD24,<timestamp>,Tagus,-25.284736,30.621354
+car,20SD30,<timestamp>,Tagus,-25.284736,30.621354
 
-### Trail
+> spot car *1
+car,10SD21,<timestamp>,Alameda,-25.284736,30.621354
+car,20HD21,<timestamp>,Alameda,-25.284736,30.621354
+car,20SD21,<timestamp>,Alameda,-25.284736,30.621354
 
-To see all the observations about a particular person:
-
-```
-trail person 5111111
-```
-
-Make sure you see the following output:
-
-```
-person,5111111,2020-04-03T12:55:18,Alameda,-25.284736,30.621354
-person,5111111,2020-04-03T12:55:15,Alameda,-25.284736,30.621354
-```
-
-### Exiting the app
-
-To clear the server state you can:
+> spot car 20*D21
+car,20HD21,<timestamp>,Alameda,-25.284736,30.621354
+car,20SD21,<timestamp>,Alameda,-25.284736,30.621354
 
 ```
-clear
-```
 
-Make sure you see the following output:
+### 2.6. *trace*
 
-```
-Server state cleared
-```
+Esta operação vai ser testada utilizando o comando *trail* com um identificador.
 
-And to exit the application:
+2.6.1. Teste com uma pessoa que nao exista:
 
 ```
-exit
+> trail person 123
 ```
 
-Make sure you see the following output:
+não deve ser imprimido nada na consola.
+
+2.6.2. Teste com uma pessoa:
 
 ```
-Exiting...
+> trail person 5111111
+person,5111111,<timestamp>,Tagus,-25.284736,30.621354
+person,5111111,<timestamp>,Alameda,-25.284736,30.621354
+person,5111111,<timestamp>,Alameda,-25.284736,30.621354
 ```
 
-and the application exits.
+2.6.3. Teste com um carro que não existe:
 
-### Note
+```
+> trail car 10HH20
+```
 
-All the commands work for both people and cars, even tough some instances were not shown in this demonstration.
+não deve ser imprimido nada na consola.
+
+2.6.4. Teste com um carro:
+
+```
+> trail car 20SD24
+car,20SD24,<timestamp>,Tagus,-25.284736,30.621354
+car,20SD24,<timestamp>,Alameda,-25.284736,30.621354
+car,20SD24,<timestamp>,Alameda,-25.284736,30.621354
+car,20SD24,<timestamp>,Alameda,-25.284736,30.621354
+```
+
+## 2.7. *Help*
+
+Para ver todos os comandos suportados pelo spotter pode ser feito:
+
+```
+> help
+```
+
+## 2.8. *Exit*
+
+Para sair da aplicação spotter pode ser usado o comando:
+
+```
+> exit
+```
+
+e a aplicação encerra
+
+## 3. Testes de integração
+
+Para correr os testes de integração que cobrem todas as operações do SILO é necessário ter o projeto e todos os módulos compilados.
+Para isso deve-se abrir uma *shell* na pasta *root* do projeto e correr:
+
+```
+$ mvn clean install -DskipTests
+```
+
+Verifique que não há nenhum erro de compilação e de seguida corra:
+
+```
+cd silo-client/
+mvn verify
+```
+
+Os 47 testes devem ter corrido sem erros ou falhas, testando assim por completo todas as operações do Silo.
+
+
+
+
+## 4. Considerações Finais
+
+Estes testes não cobrem tudo, pelo que devem ter sempre em conta os testes de integração e o código.
+

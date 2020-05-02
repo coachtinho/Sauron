@@ -110,28 +110,24 @@ public class SiloFrontend {
         while (true) {
             try {
                 CameraInfoResponse response = stub.camInfo(request);
-                System.out.println(response.getTsList());
 
                 // If we have this request cached
                 if (this.trackCache.containsKey(request)) {
 
                     // If response timestamp is greater or equal, replaces the cached response
                     if (greaterThan(response.getTsList(), this.trackCache.get(request).getTsList())) {
-                        System.out.println("novo!!");
                         this.cameraInfoCache.put(request, response);
                         return response;
                     }
 
                     // Else, returns cached response
                     else {
-                        System.out.println("velho!!");
                         return this.cameraInfoCache.get(request);
                     }
                 } 
                 
                 // Else, Caches response
                 else {
-                    System.out.println("não tou ca dentro");
                     this.cameraInfoCache.put(request, response);
                     return response;
                 }
@@ -206,28 +202,24 @@ public class SiloFrontend {
         while (true) {
             try {
                 TrackResponse response = stub.track(request);
-                System.out.println(response.getTsList());
 
                 // If we have this request cached
                 if (this.trackCache.containsKey(request)) {
 
                     // If response timestamp is greater or equal, replaces the cached response
                     if (greaterThan(response.getTsList(), this.trackCache.get(request).getTsList())) {
-                        System.out.println("novo!!");
                         this.trackCache.put(request, response);
                         return response;
                     }
 
                     // Else, returns cached response
                     else {
-                        System.out.println("velho!!");
                         return this.trackCache.get(request);
                     }
                 } 
                 
                 // Else, Caches response
                 else {
-                    System.out.println("não tou ca dentro");
                     this.trackCache.put(request, response);
                     return response;
                 }
@@ -262,28 +254,24 @@ public class SiloFrontend {
         while (true) {
             try {
                 TrackMatchResponse response = stub.trackMatch(request);
-                System.out.println(response.getTsList());
 
                 // If we have this request cached
                 if (this.trackMatchCache.containsKey(request)) {
 
                     // If response timestamp is greater or equal, replaces the cached response
                     if (greaterThan(response.getTsList(), this.trackMatchCache.get(request).getTsList())) {
-                        System.out.println("novo!!");
                         this.trackMatchCache.put(request, response);
                         return response;
                     }
 
                     // Else, returns cached response
                     else {
-                        System.out.println("velho!!");
                         return this.trackMatchCache.get(request);
                     }
                 } 
                 
                 // Else, Caches response
                 else {
-                    System.out.println("não tou ca dentro");
                     this.trackMatchCache.put(request, response);
                     return response;
                 }
@@ -318,28 +306,24 @@ public class SiloFrontend {
         while (true) {
             try {
                 TraceResponse response = stub.trace(request);
-                System.out.println(response.getTsList());
 
                 // If we have this request cached
                 if (this.traceCache.containsKey(request)) {
 
                     // If response timestamp is greater or equal, replaces the cached response
                     if (greaterThan(response.getTsList(), this.traceCache.get(request).getTsList())) {
-                        System.out.println("novo!!");
                         this.traceCache.put(request, response);
                         return response;
                     }
 
                     // Else, returns cached response
                     else {
-                        System.out.println("velho!!");
                         return this.traceCache.get(request);
                     }
                 } 
                 
                 // Else, Caches response
                 else {
-                    System.out.println("não tou ca dentro");
                     this.traceCache.put(request, response);
                     return response;
                 }
