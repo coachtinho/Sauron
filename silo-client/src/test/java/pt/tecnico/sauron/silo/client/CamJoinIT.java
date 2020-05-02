@@ -58,6 +58,17 @@ public class CamJoinIT extends BaseIT {
     }
 
     @Test
+    public void camJoinSameCoordsTest() throws SiloFrontendException {
+        CameraRegistrationRequest request = CameraRegistrationRequest.newBuilder(). //
+				setName("Camera2") //
+                .setLatitude(678.91) //
+                .setLongitude(123.45) //
+                .build();
+        CameraRegistrationResponse response = frontend.camJoin(request);
+        assertNotEquals(response, null);
+    }
+
+    @Test
     public void camJoinNoNameTest() throws SiloFrontendException {
         CameraRegistrationRequest request = CameraRegistrationRequest.newBuilder() //
 				.setLatitude(123.45) //
