@@ -37,6 +37,8 @@ public class ReplicaManager extends GossipImplBase {
     private Vector<ReportRequest> _reportQueue;
     // frontend
     ReplicaFrontend _frontend;
+    // thread pool for gossip messages
+    ScheduledExecutorService _executor;
 
     public ReplicaManager(int replicaCount, int instance, String zooHost, String zooPort, SiloServer siloServer) {
         _replicaCount = replicaCount;
@@ -54,19 +56,24 @@ public class ReplicaManager extends GossipImplBase {
         _frontend = new ReplicaFrontend(zooHost, zooPort, instance);
 
         // Set gossip message timer
-        Runnable helloRunnable = new Runnable() {
+        Runnable gossipRunnable = new Runnable() {
             public void run() {
                 // System.out.println("Started...");
-                _frontend.gossipData(_camJoinLog, _reportLog, new Vector<>(_TS));
-                _camJoinLog.clear();
-                _reportLog.clear();
-                // System.out.println("Stopped...");
+                if (!_camJoinLog.isEmpty() || !_reportLog.isEmpty()) {
+                    _frontend.gossipData(_camJoinLog, _reportLog, new Vector<>(_TS));
+                    _camJoinLog.clear();
+                    _reportLog.clear();
+                }
             }
         };
 
-        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-        executor.scheduleAtFixedRate(helloRunnable, GOSSIP_INTERVAL, GOSSIP_INTERVAL, TimeUnit.SECONDS);
+        _executor = Executors.newScheduledThreadPool(1);
+        _executor.scheduleAtFixedRate(gossipRunnable, GOSSIP_INTERVAL, GOSSIP_INTERVAL, TimeUnit.SECONDS);
 
+    }
+
+    public void stopGossip() {
+        _executor.shutdownNow();
     }
 
     public Vector<Integer> generateOtherTS(List<Integer> tsList) {

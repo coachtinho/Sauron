@@ -36,17 +36,17 @@ public class SiloServerApp {
 
         // Bind grpc implementations
         final String path = "/grpc/sauron/silo/" + instance;
-        final BindableService impl = new SiloServerImpl(replicaManager, silo);
-        final BindableService impl_2 = replicaManager;
+        final BindableService sauronImpl = new SiloServerImpl(replicaManager, silo);
+        final BindableService gossipImpl = replicaManager;
 
         // Create a new server to listen on port
-        Server server = ServerBuilder.forPort(serverPort).addService(impl).addService(impl_2).build();
+        Server server = ServerBuilder.forPort(serverPort).addService(sauronImpl).addService(gossipImpl).build();
         ZKNaming zkNaming = null;
         try {
             zkNaming = new ZKNaming(zooHost, zooPort);
 
-            // publish
-            zkNaming.rebind(path, serverHost, serverPort.toString());
+            // register grpc server node in zookeeper
+            zkNaming.bind(path, serverHost, serverPort.toString());
 
             // start gRPC server
             server.start();
@@ -58,19 +58,26 @@ public class SiloServerApp {
             new Thread(() -> {
                 System.out.println("<Press enter to shutdown>");
                 new Scanner(System.in).nextLine();
-                server.shutdown();
+                server.shutdownNow();
             }).start();
 
             // Do not exit the main thread. Wait until server is terminated.
             server.awaitTermination();
             System.out.println("Server stopped");
+
+        } catch (ZKNamingException e) {
+            System.out.println("Could not bind to zookeeper server, exiting...");
         } finally {
+            // clear grpc server from zookeeper
             System.out.println("Unbinding zoo node");
             if (zkNaming != null) {
                 // remove
                 zkNaming.unbind(path, serverHost, serverPort.toString());
+                System.out.println("Unbinded");
             }
 
+            // stop gossip task
+            replicaManager.stopGossip();
         }
     }
 
