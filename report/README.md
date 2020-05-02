@@ -81,7 +81,7 @@ Sistemas Distribuídos 2019-2020, segundo semestre
 ![Solution](solution.png)  
 
 Um cliente ao ser iniciado, liga-se a uma das réplicas do servidor de forma aleatória, a não ser que lhe seja fornecido um número de instância. Em qualquer tipo de troca de mensagens, se a réplica que está a ser contactada não responder dentro de um _timeout_ pré-definido, o cliente utiliza uma técnica de backoff exponencial até obter resposta. Caso a réplica envie reposta após um certo número de tentativas, o cliente liga-se a outra réplica, escolhida aleatoriamente, e reenvia o pedido. Ao realizar uma leitura, o cliente guarda numa _cache_ o par pedido/resposta e sempre que receber uma nova leitura, compara os timestamps vetoriais do pedido recebido com aquele guardado em cache, mostrando ao utilizador aquele que for mais recente.
-Do lado do servidor,no caso de uma escrita (i.e. registo da camara, report, etc...), os dados são guardados na réplica contactada, sendo estes propagados mais tarde,  para todas as réplicas disponíceis, por gossip.
+Do lado do servidor,no caso de uma escrita (i.e. registo da camara, report, etc...), os dados são guardados na réplica contactada, sendo estes propagados mais tarde,  para todas as réplicas disponíveis, por gossip.
 
   
   
@@ -102,7 +102,6 @@ Para cada réplica, se o servidor não conseguir obter reposta dentro de um temp
 Após o número de tentantivas exceder o configurado, o servidor assume que a réplica a contactar está indiponível permanentemente e não voltará a estar disponível.
 
   
-  
 
 ##  Opções de implementação
 
@@ -110,15 +109,3 @@ Após o número de tentantivas exceder o configurado, o servidor assume que a r�
 
 Só é efetuado _gossip_ caso a réplica tenha informação que ainda não propagou. Caso não tenha nada a propagar, o servidor esperará mais 30s antes de tentar fazer um _gossip_ de novo.
 Caso uma das listas de escritas (_report_ ou _camJoin_) esteja vazia, em vez de adicionar uma lista vazia à mensagem, esta é ignorada. Fazendo com o método _build()_ crie uma mensagem mais pequena.
-
-  
-  
-  
-
-##  Notas finais
-
-  
-
-_(Algo mais a dizer?)_
-
-
