@@ -58,7 +58,7 @@ public class ReplicaManager extends GossipImplBase {
         // Set gossip message timer
         Runnable gossipRunnable = new Runnable() {
             public void run() {
-                // System.out.println("Started...");
+                // send gossip only when there's something to say
                 if (!_camJoinLog.isEmpty() || !_reportLog.isEmpty()) {
                     _frontend.gossipData(_camJoinLog, _reportLog, new Vector<>(_TS));
                     _camJoinLog.clear();
