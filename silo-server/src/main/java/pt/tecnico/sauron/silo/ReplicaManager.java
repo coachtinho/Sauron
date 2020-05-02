@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 import com.google.protobuf.Timestamp;
 
 import io.grpc.stub.StreamObserver;
+import pt.tecnico.sauron.silo.domain.Observation;
 import pt.tecnico.sauron.silo.domain.ReplicaFrontend;
 import pt.tecnico.sauron.silo.domain.SiloException;
 import pt.tecnico.sauron.silo.domain.SiloServer;
@@ -22,6 +23,7 @@ import pt.tecnico.sauron.silo.grpc.Silo.GossipRequest;
 import pt.tecnico.sauron.silo.grpc.Silo.GossipResponse;
 import pt.tecnico.sauron.silo.grpc.Silo.ReportRequest;
 import pt.tecnico.sauron.silo.grpc.Silo.ReportRequest.ReportItem;
+import pt.tecnico.sauron.silo.grpc.Silo.ObservationType;
 
 public class ReplicaManager extends GossipImplBase {
     private final int GOSSIP_INTERVAL = 30;
@@ -135,7 +137,7 @@ public class ReplicaManager extends GossipImplBase {
                 LocalDateTime timestamp = timestampToLocalDateTime(r.getTimestamp());
                 for (ReportItem item : items) {
                     String cameraName = r.getCameraName();
-                    String type = item.getType();
+                    ObservationType type = item.getType();
                     String id = item.getId();
                     if (_siloServer.isValidType(type) && _siloServer.isValidId(type, id))
                         _siloServer.reportObservation(cameraName, type, id, timestamp);
