@@ -25,23 +25,15 @@ message ClearRequest {
 message ClearResponse {
 }
 
-
-
-
-
-
-
-// TODO: string type -> enum e  string id -> int
-
-
-
-
-
-
+enum ObservationType {
+    UNKNOWN = 0;
+    PERSON = 1;
+    CAR = 2;
+};
 
 message ReportRequest {  
     message ReportItem {
-        string type = 1;
+        ObservationType type = 1;
         string id = 2;
     }
     string cameraName = 1;
@@ -51,7 +43,7 @@ message ReportRequest {
 
 message ReportResponse {
     message FailureItem {
-        string type = 1;
+        ObservationType type = 1;
         string id = 2;
         string message = 3;
     }
@@ -60,12 +52,12 @@ message ReportResponse {
 }
 
 message TrackRequest {
-    string type = 1;
+    ObservationType type = 1;
     string id = 2;    
 }
 
 message TrackResponse {
-    string type = 1;
+    ObservationType type = 1;
     string id = 2;
     google.protobuf.Timestamp timestamp = 3;
     string name = 4;
@@ -75,7 +67,7 @@ message TrackResponse {
 }
 
 message TrackMatchRequest {
-    string type = 1;
+    ObservationType type = 1;
     string id = 2;    
 }
 
@@ -85,7 +77,7 @@ message TrackMatchResponse {
 }
 
 message TraceRequest {
-    string type = 1;
+    ObservationType type = 1;
     string id = 2;    
 }
 

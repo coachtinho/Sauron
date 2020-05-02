@@ -15,7 +15,7 @@ public class PingIT extends BaseIT {
     // static members
     private static final String host = testProps.getProperty("zoo.host");
     private static final String port = testProps.getProperty("zoo.port");
-    private static final String instance = "1";
+    private static final String instance = testProps.getProperty("server.instance");
     private static SiloFrontend frontend;
 
     // one-time initialization and clean-up

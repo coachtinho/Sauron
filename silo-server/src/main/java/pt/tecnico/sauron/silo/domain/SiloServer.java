@@ -8,6 +8,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import pt.tecnico.sauron.silo.grpc.Silo.ObservationType;
+
 public class SiloServer {
     private Map<String, Camera> _cameras;
     private Map<String, List<Observation>> _cars;
@@ -112,10 +114,10 @@ public class SiloServer {
         return true;
     }
 
-    public void reportObservation(String cameraName, String type, String id, LocalDateTime timestamp) {
+    public void reportObservation(String cameraName, ObservationType type, String id, LocalDateTime timestamp) {
         Camera camera = _cameras.get(cameraName);
         switch (type) {
-            case "person":
+            case PERSON:
                 Person person = new Person(id, camera, timestamp);
                 if (_people.containsKey(id)) {
                     // Just add the observation
@@ -127,7 +129,7 @@ public class SiloServer {
                     _people.put(id, observations);
                 }
                 break;
-            case "car":
+            case CAR:
                 Car car = new Car(id, camera, timestamp);
                 if (_cars.containsKey(id)) {
                     // Just add the observation
@@ -182,19 +184,19 @@ public class SiloServer {
         return _cameras.containsKey(name);
     }
 
-    public boolean isValidId(String type, String id) {
+    public boolean isValidId(ObservationType type, String id) {
         switch (type) {
-            case "person":
+            case PERSON:
                 return Person.isValidId(id);
-            case "car":
+            case CAR:
                 return Car.isValidId(id);
             default:
                 return false;
         }
     }
 
-    public boolean isValidType(String type) {
-        return type.equals("person") || type.equals("car");
+    public boolean isValidType(ObservationType type) {
+        return type == ObservationType.PERSON || type == ObservationType.CAR;
     }
 
 }

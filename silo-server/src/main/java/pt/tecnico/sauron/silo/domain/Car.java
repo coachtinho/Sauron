@@ -1,6 +1,7 @@
 package pt.tecnico.sauron.silo.domain;
 
 import java.time.LocalDateTime;
+import pt.tecnico.sauron.silo.grpc.Silo.ObservationType;;
 
 public class Car extends Observation {
 
@@ -17,8 +18,8 @@ public class Car extends Observation {
     }
 
     @Override
-    public String getType() {
-        return "car";
+    public ObservationType getType() {
+        return ObservationType.CAR;
     }
 
     public static boolean isValidId(String id) {

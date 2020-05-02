@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.List;
 
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -18,6 +19,7 @@ import pt.tecnico.sauron.silo.grpc.Silo.ReportRequest;
 import pt.tecnico.sauron.silo.grpc.Silo.ReportResponse;
 import pt.tecnico.sauron.silo.grpc.Silo.ReportRequest.ReportItem;
 import pt.tecnico.sauron.silo.grpc.Silo.ReportResponse.FailureItem;
+import pt.tecnico.sauron.silo.grpc.Silo.ObservationType;
 
 
 public class ReportIT extends BaseIT {
@@ -25,7 +27,7 @@ public class ReportIT extends BaseIT {
     // static members
     private static final String host = testProps.getProperty("zoo.host");
     private static final String port = testProps.getProperty("zoo.port");
-    private static final String instance = "1";
+    private static final String instance = testProps.getProperty("server.instance");
     private static SiloFrontend frontend;
     private final String CAM_NAME = "TESTCAM1";
     private final String VALID_PERSON_ID = "1234";
@@ -64,7 +66,7 @@ public class ReportIT extends BaseIT {
     @Test
     public void reportOneCarOKTest() throws SiloFrontendException {
         // Arrange
-        final ReportRequest.Builder request = makeReportRequest("car", VALID_CAR_ID, CAM_NAME);
+        final ReportRequest.Builder request = makeReportRequest(ObservationType.CAR, VALID_CAR_ID, CAM_NAME);
 
         // Act
         ReportResponse response = frontend.report(request.build());
@@ -77,7 +79,7 @@ public class ReportIT extends BaseIT {
     @Test
     public void reportOnePersonOKTest() throws SiloFrontendException {
         // Arrange
-        ReportRequest.Builder request = makeReportRequest("person", VALID_PERSON_ID, CAM_NAME);
+        ReportRequest.Builder request = makeReportRequest(ObservationType.PERSON, VALID_PERSON_ID, CAM_NAME);
 
         // Act
         ReportResponse response = frontend.report(request.build());
@@ -90,7 +92,7 @@ public class ReportIT extends BaseIT {
     @Test
     public void reportNoneOKTest() throws SiloFrontendException {
         // Arrange
-        ReportRequest.Builder request = makeReportRequest("", "", CAM_NAME);
+        ReportRequest.Builder request = makeReportRequest(ObservationType.UNKNOWN, "", CAM_NAME);
         request.clearReports(); // emtpy report list
 
         // Act
@@ -105,8 +107,8 @@ public class ReportIT extends BaseIT {
     @Test
     public void reportMultipleOKTest() throws SiloFrontendException {
         // Arrange
-        ReportRequest.Builder request = makeReportRequest("person", VALID_PERSON_ID, CAM_NAME);
-        ReportItem item = makeReportItem("car", VALID_CAR_ID);
+        ReportRequest.Builder request = makeReportRequest(ObservationType.PERSON, VALID_PERSON_ID, CAM_NAME);
+        ReportItem item = makeReportItem(ObservationType.CAR, VALID_CAR_ID);
         request.addReports(item);
 
         // Act
@@ -118,26 +120,9 @@ public class ReportIT extends BaseIT {
     }
 
     @Test
-    public void reportWrongTypeFailTest() throws SiloFrontendException {
-        // Arrange
-        ReportRequest.Builder request = makeReportRequest("COVID19", "stay at home", CAM_NAME);
-
-        // Act
-        ReportResponse response = frontend.report(request.build());
-        List<FailureItem> failures = response.getFailuresList();
-
-        // Assert
-        assertTrue(failures.size() == 1);
-        FailureItem fail = failures.get(0);
-        assertTrue("COVID19".equals(fail.getType()));
-        String expected = "Invalid type";
-        assertTrue(expected.equals(fail.getMessage()));
-    }
-
-    @Test
     public void reportCarInvalidIdFailTest() throws SiloFrontendException {
         // Arrange
-        ReportRequest.Builder request = makeReportRequest("car", INVALID_CAR_ID, CAM_NAME);
+        ReportRequest.Builder request = makeReportRequest(ObservationType.CAR, INVALID_CAR_ID, CAM_NAME);
 
         // Act
         System.out.println("127:" + request.getReportsCount());
@@ -149,16 +134,16 @@ public class ReportIT extends BaseIT {
         System.out.println("131:" + failures.size());
         assertTrue(failures.size() == 1);
         FailureItem fail = failures.get(0);
-        assertTrue("car".equals(fail.getType()));
+        assertTrue(ObservationType.CAR == fail.getType());
         assertTrue(INVALID_CAR_ID.equals(fail.getId()));
-        String expected = "Invalid id '" + INVALID_CAR_ID + "' for type car";
+        String expected = "Invalid id '" + INVALID_CAR_ID + "' for type " + ObservationType.CAR;
         assertTrue(expected.equals(fail.getMessage()));
     }
 
     @Test
     public void reportPersonInvalidIdFailTest() throws SiloFrontendException {
         // Arrange
-        ReportRequest.Builder request = makeReportRequest("person", INVALID_PERSON_ID, CAM_NAME);
+        ReportRequest.Builder request = makeReportRequest(ObservationType.PERSON, INVALID_PERSON_ID, CAM_NAME);
 
         // Act
         ReportResponse response = frontend.report(request.build());
@@ -167,16 +152,16 @@ public class ReportIT extends BaseIT {
         // Assert
         assertTrue(failures.size() == 1);
         FailureItem fail = failures.get(0);
-        assertTrue("person".equals(fail.getType()));
+        assertTrue(ObservationType.PERSON == fail.getType());
         assertTrue(INVALID_PERSON_ID.equals(fail.getId()));
-        String expected = "Invalid id '" + INVALID_PERSON_ID + "' for type person";
+        String expected = "Invalid id '" + INVALID_PERSON_ID + "' for type " + ObservationType.PERSON;
         assertTrue(expected.equals(fail.getMessage()));
     }
 
     @Test
     public void reportIllegalCameraExceptionTest() throws SiloFrontendException {
         // Arrange
-        ReportRequest.Builder request = makeReportRequest("person", VALID_PERSON_ID, "CAM_THAT_DOESNT_EXIST");
+        ReportRequest.Builder request = makeReportRequest(ObservationType.PERSON, VALID_PERSON_ID, "CAM_THAT_DOESNT_EXIST");
 
         // Act & Assert
         Exception exception = assertThrows(StatusRuntimeException.class, () -> frontend.report(request.build()));
@@ -189,10 +174,10 @@ public class ReportIT extends BaseIT {
     @Test
     public void reportMultipleWithOneWrongFailTest() throws SiloFrontendException {
         // Arrange
-        ReportRequest.Builder request = makeReportRequest("person", VALID_PERSON_ID, CAM_NAME);
-        ReportItem item = makeReportItem("car", VALID_CAR_ID);
+        ReportRequest.Builder request = makeReportRequest(ObservationType.PERSON, VALID_PERSON_ID, CAM_NAME);
+        ReportItem item = makeReportItem(ObservationType.CAR, VALID_CAR_ID);
         request.addReports(item);
-        item = makeReportItem("car", INVALID_CAR_ID);
+        item = makeReportItem(ObservationType.CAR, INVALID_CAR_ID);
         request.addReports(item);
 
         // Act
@@ -202,21 +187,21 @@ public class ReportIT extends BaseIT {
         // Assert
         assertTrue(failures.size() == 1);
         FailureItem fail = failures.get(0);
-        assertTrue("car".equals(fail.getType()));
+        assertTrue(ObservationType.CAR == fail.getType());
         assertTrue(INVALID_CAR_ID.equals(fail.getId()));
-        String expected = "Invalid id '" + INVALID_CAR_ID + "' for type car";
+        String expected = "Invalid id '" + INVALID_CAR_ID + "' for type " + ObservationType.CAR;
         assertTrue(expected.equals(fail.getMessage()));
     }
 
     @Test
     public void reportMultipleWithMultipleWrongFailTest() throws SiloFrontendException {
         // Arrange
-        ReportRequest.Builder request = makeReportRequest("person", VALID_PERSON_ID, CAM_NAME);
-        ReportItem item = makeReportItem("car", VALID_CAR_ID);
+        ReportRequest.Builder request = makeReportRequest(ObservationType.PERSON, VALID_PERSON_ID, CAM_NAME);
+        ReportItem item = makeReportItem(ObservationType.CAR, VALID_CAR_ID);
         request.addReports(item);
-        item = makeReportItem("car", INVALID_CAR_ID);
+        item = makeReportItem(ObservationType.CAR, INVALID_CAR_ID);
         request.addReports(item);
-        item = makeReportItem("person", INVALID_PERSON_ID);
+        item = makeReportItem(ObservationType.PERSON, INVALID_PERSON_ID);
         request.addReports(item);
 
         // Act
@@ -228,16 +213,16 @@ public class ReportIT extends BaseIT {
 
         // Assert 1st failure
         FailureItem fail = failures.get(0);
-        assertTrue("car".equals(fail.getType()));
+        assertTrue(ObservationType.CAR == fail.getType());
         assertTrue(INVALID_CAR_ID.equals(fail.getId()));
-        String expected = "Invalid id '" + INVALID_CAR_ID + "' for type car";
+        String expected = "Invalid id '" + INVALID_CAR_ID + "' for type " + ObservationType.CAR;
         assertTrue(expected.equals(fail.getMessage()));
 
         // Assert 2nd failure
         fail = failures.get(1);
-        assertTrue("person".equals(fail.getType()));
+        assertTrue(ObservationType.PERSON == fail.getType());
         assertTrue(INVALID_PERSON_ID.equals(fail.getId()));
-        expected = "Invalid id '" + INVALID_PERSON_ID + "' for type person";
+        expected = "Invalid id '" + INVALID_PERSON_ID + "' for type " + ObservationType.PERSON;
         assertTrue(expected.equals(fail.getMessage()));
     }
 
@@ -245,7 +230,7 @@ public class ReportIT extends BaseIT {
 
     // AUX functions
 
-    private ReportRequest.Builder makeReportRequest(String type, String id, String camera) {
+    private ReportRequest.Builder makeReportRequest(ObservationType type, String id, String camera) {
         ReportRequest.Builder requestBuilder = ReportRequest.newBuilder();
         requestBuilder.setCameraName(camera);
         ReportItem report = makeReportItem(type, id);
@@ -253,7 +238,7 @@ public class ReportIT extends BaseIT {
         return requestBuilder;
     }
 
-    private ReportItem makeReportItem(String type, String id) {
+    private ReportItem makeReportItem(ObservationType type, String id) {
         // Create report message
         return ReportItem.newBuilder() //
                 .setType(type) //

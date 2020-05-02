@@ -10,6 +10,7 @@ import pt.tecnico.sauron.silo.grpc.Silo.ReportRequest;
 import pt.tecnico.sauron.silo.grpc.Silo.TrackRequest;
 import pt.tecnico.sauron.silo.grpc.Silo.TrackResponse;
 import pt.tecnico.sauron.silo.grpc.Silo.ReportRequest.ReportItem;
+import pt.tecnico.sauron.silo.grpc.Silo.ObservationType;
 
 import static io.grpc.Status.INVALID_ARGUMENT;
 import io.grpc.StatusRuntimeException;
@@ -30,7 +31,7 @@ public class TrackIT extends BaseIT {
     public static void oneTimeSetUp() throws StatusRuntimeException, InterruptedException, SiloFrontendException {
         host = testProps.getProperty("zoo.host");
         port = testProps.getProperty("zoo.port");
-        instance = "1";
+        instance = testProps.getProperty("server.instance");
         offset = Integer.parseInt(testProps.getProperty("time.tolerance"));
         frontend = new SiloFrontend(host, port, instance);
         
@@ -44,21 +45,21 @@ public class TrackIT extends BaseIT {
         // Observations
         ReportRequest.Builder reportRequest1Builder = ReportRequest.newBuilder();
         reportRequest1Builder.setCameraName(camRequest1.getName());
-        reportRequest1Builder.addReports(ReportItem.newBuilder().setType("person").setId("1").build());
-        reportRequest1Builder.addReports(ReportItem.newBuilder().setType("person").setId("2").build());
-        reportRequest1Builder.addReports(ReportItem.newBuilder().setType("car").setId("AA1111").build());
-        reportRequest1Builder.addReports(ReportItem.newBuilder().setType("car").setId("AA1112").build());
+        reportRequest1Builder.addReports(ReportItem.newBuilder().setType(ObservationType.PERSON).setId("1").build());
+        reportRequest1Builder.addReports(ReportItem.newBuilder().setType(ObservationType.PERSON).setId("2").build());
+        reportRequest1Builder.addReports(ReportItem.newBuilder().setType(ObservationType.CAR).setId("AA1111").build());
+        reportRequest1Builder.addReports(ReportItem.newBuilder().setType(ObservationType.CAR).setId("AA1112").build());
         reportRequest1 = reportRequest1Builder.build();
         frontend.report(reportRequest1);
         Thread.sleep(1000);
         ReportRequest.Builder reportRequest2Builder = ReportRequest.newBuilder();
         reportRequest2Builder.setCameraName(camRequest2.getName());
-        reportRequest2Builder.addReports(ReportItem.newBuilder().setType("person").setId("1").build());
-        reportRequest2Builder.addReports(ReportItem.newBuilder().setType("person").setId("3").build());
-        reportRequest2Builder.addReports(ReportItem.newBuilder().setType("person").setId("4").build());
-        reportRequest2Builder.addReports(ReportItem.newBuilder().setType("car").setId("AA1111").build());
-        reportRequest2Builder.addReports(ReportItem.newBuilder().setType("car").setId("AA1113").build());
-        reportRequest2Builder.addReports(ReportItem.newBuilder().setType("car").setId("AA1114").build());   
+        reportRequest2Builder.addReports(ReportItem.newBuilder().setType(ObservationType.PERSON).setId("1").build());
+        reportRequest2Builder.addReports(ReportItem.newBuilder().setType(ObservationType.PERSON).setId("3").build());
+        reportRequest2Builder.addReports(ReportItem.newBuilder().setType(ObservationType.PERSON).setId("4").build());
+        reportRequest2Builder.addReports(ReportItem.newBuilder().setType(ObservationType.CAR).setId("AA1111").build());
+        reportRequest2Builder.addReports(ReportItem.newBuilder().setType(ObservationType.CAR).setId("AA1113").build());
+        reportRequest2Builder.addReports(ReportItem.newBuilder().setType(ObservationType.CAR).setId("AA1114").build());   
         reportRequest2 = reportRequest2Builder.build();
         frontend.report(reportRequest2);
     }
@@ -79,7 +80,7 @@ public class TrackIT extends BaseIT {
 
     @Test
     public void trackPersonTest() throws SiloFrontendException {
-        String reportType = "person";
+        ObservationType reportType = ObservationType.PERSON;
         String reportId = "1";
         TrackRequest request = TrackRequest.newBuilder().setType(reportType).setId(reportId).build();
         TrackResponse response = frontend.track(request);
@@ -95,7 +96,7 @@ public class TrackIT extends BaseIT {
 
     @Test
     public void trackCarTest() throws SiloFrontendException {
-        String reportType = "car";
+        ObservationType reportType = ObservationType.CAR;
         String reportId = "AA1111";
         TrackRequest request = TrackRequest.newBuilder().setType(reportType).setId(reportId).build();
         TrackResponse response = frontend.track(request);
@@ -120,7 +121,7 @@ public class TrackIT extends BaseIT {
 
     @Test
     public void trackEmptyIdTest() throws SiloFrontendException {
-        String reportType = reportRequest1.getReports(0).getType();
+        ObservationType reportType = reportRequest1.getReports(0).getType();
         TrackRequest request = TrackRequest.newBuilder().setType(reportType).build();
         StatusRuntimeException exception = assertThrows(StatusRuntimeException.class, () -> frontend.track(request));
         assertEquals(INVALID_ARGUMENT.getCode(), exception.getStatus().getCode());
@@ -129,7 +130,7 @@ public class TrackIT extends BaseIT {
 
     @Test
     public void trackInvalidPersonIdTest() throws SiloFrontendException {
-        String reportType = reportRequest1.getReports(0).getType();
+        ObservationType reportType = reportRequest1.getReports(0).getType();
         TrackRequest request = TrackRequest.newBuilder().setType(reportType).setId("a").build();
         StatusRuntimeException exception = assertThrows(StatusRuntimeException.class, () -> frontend.track(request));
         assertEquals(INVALID_ARGUMENT.getCode(), exception.getStatus().getCode());
@@ -138,29 +139,20 @@ public class TrackIT extends BaseIT {
 
     @Test
     public void trackInvalidCarIdTest() throws SiloFrontendException {
-        String reportType = reportRequest1.getReports(2).getType();
+        ObservationType reportType = reportRequest1.getReports(2).getType();
         TrackRequest request = TrackRequest.newBuilder().setType(reportType).setId("1").build();
         StatusRuntimeException exception = assertThrows(StatusRuntimeException.class, () -> frontend.track(request));
         assertEquals(INVALID_ARGUMENT.getCode(), exception.getStatus().getCode());
         assertEquals("INVALID_ARGUMENT: Car ID doesn't match rules", exception.getMessage());
     }
-    
-    @Test
-    public void trackInvalidTypeTest() throws SiloFrontendException {
-        String reportId = reportRequest1.getReports(0).getId();
-        TrackRequest request = TrackRequest.newBuilder().setType("a").setId(reportId).build();
-        StatusRuntimeException exception = assertThrows(StatusRuntimeException.class, () -> frontend.track(request));
-        assertEquals(INVALID_ARGUMENT.getCode(), exception.getStatus().getCode());
-        assertEquals("INVALID_ARGUMENT: Type is not a valid observation!", exception.getMessage());
-    }
 
     @Test
     public void trackNonExistingPersonTest() throws SiloFrontendException {
-        String reportType = reportRequest1.getReports(0).getType();
+        ObservationType reportType = reportRequest1.getReports(0).getType();
         TrackRequest request = TrackRequest.newBuilder().setType(reportType).setId("123").build();
         TrackResponse response = frontend.track(request);
         assertEquals("", response.getId());
-        assertEquals("", response.getType());
+        assertEquals(ObservationType.UNKNOWN, response.getType());
         assertEquals(0, response.getTimestamp().getSeconds());
         assertEquals("", response.getName());
         assertEquals(0, response.getLongitude(), 0.000001);
@@ -169,11 +161,11 @@ public class TrackIT extends BaseIT {
 
     @Test
     public void trackNonExistingCarTest() throws SiloFrontendException {
-        String reportType = reportRequest1.getReports(2).getType();
+        ObservationType reportType = reportRequest1.getReports(2).getType();
         TrackRequest request = TrackRequest.newBuilder().setType(reportType).setId("AA12AA").build();
         TrackResponse response = frontend.track(request);
         assertEquals("", response.getId());
-        assertEquals("", response.getType());
+        assertEquals(ObservationType.UNKNOWN, response.getType());
         assertEquals(0, response.getTimestamp().getSeconds());
         assertEquals("", response.getName());
         assertEquals(0, response.getLongitude(), 0.000001);

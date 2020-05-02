@@ -16,7 +16,7 @@ public class CamJoinIT extends BaseIT {
     // static members
     private static final String host = testProps.getProperty("zoo.host");
     private static final String port = testProps.getProperty("zoo.port");
-    private static final String instance = "1";
+    private static final String instance = testProps.getProperty("server.instance");
     private static SiloFrontend frontend;
 
     // one-time initialization and clean-up
@@ -108,7 +108,7 @@ public class CamJoinIT extends BaseIT {
                 .build();
         Exception exception = assertThrows(StatusRuntimeException.class, () -> frontend.camJoin(request));
         assertEquals(INVALID_ARGUMENT.asRuntimeException().getClass(), exception.getClass());
-        String expectedMessage = "Camera already exists!";
+        String expectedMessage = "Camera with that name already exists";
         String actualMessage = exception.getMessage();
         assertTrue(actualMessage.contains(expectedMessage));
     }
