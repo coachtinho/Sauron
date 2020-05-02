@@ -87,6 +87,7 @@ public class ReplicaFrontend {
             while (true) {
                 try {
                     // Send gossip msg
+                    System.out.println("Sending gossip message to " + _record.getURI());
                     stub.gossipData(_request);
                     return;
                 } catch (StatusRuntimeException e) {
