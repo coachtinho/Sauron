@@ -348,7 +348,7 @@ cd silo-client/
 mvn verify
 ```
 
-Os 47 testes devem ter corrido sem erros ou falhas, testando assim por completo todas as operações do Silo.
+Os 44 testes devem ter corrido sem erros ou falhas, testando assim por completo todas as operações do Silo.
 
 ## 4. Replicação e tolerância a faltas
 
