@@ -26,6 +26,7 @@ public class SpotterApp {
 			System.out.printf("arg[%d] = %s%n", i, args[i]);
 		}
 
+		// create the spotter object
 		Spotter spotter;
 		try {
 			spotter = new Spotter(args[0], args[1], args[2]);
@@ -45,10 +46,13 @@ public class SpotterApp {
 
 				switch (keyword) {
 					case "spot":
+						// spot command
 						line = scanner.nextLine();
 						if (line.matches(" [a-z]+ [a-zA-Z0-9*]+")) {
+							// checks if it's valid command
 							arguments = line.split(" ");
 							switch (arguments[1]) {
+								// translates string to observation type
 								case "person":
 									type = ObservationType.PERSON;
 									break;
@@ -65,10 +69,13 @@ public class SpotterApp {
 						}
 						break;
 					case "trail":
+						// trail command
 						line = scanner.nextLine();
 						if (line.matches(" [a-z]+ [a-zA-Z0-9]+")) {
+							// checks if it's valid command
 							arguments = line.split(" ");
 							switch (arguments[1]) {
+								// translates string to observation type
 								case "person":
 									type = ObservationType.PERSON;
 									break;

@@ -30,13 +30,16 @@ public class Spotter {
         frontend = new SiloFrontend(host, port, instance);
     }
 
+    // spot command
     public void spot(ObservationType type, String id) {
         try {
             if (id.contains("*")) {
+                // create a track match request with partial id and send it
                 TrackMatchRequest request = TrackMatchRequest.newBuilder().setType(type).setId(id).build();
                 LinkedList<TrackResponse> observations = new LinkedList<TrackResponse>();
                 observations.addAll(frontend.trackMatch(request).getObservationList()); 
                 Collections.sort(observations, new Comparator<TrackResponse>() {
+                    // compare function for sorting
                     @Override
                     public int compare(TrackResponse t1, TrackResponse t2) {
                         switch (t1.getType()) {
@@ -49,11 +52,14 @@ public class Spotter {
                         }
                     }
                 });
+                // print returned observations
                 observations.forEach((observation) -> printObservation(observation));
             } else {
+                // create track request with full id and send it
                 TrackRequest request = TrackRequest.newBuilder().setType(type).setId(id).build();
                 TrackResponse response = frontend.track(request);
                 if (response.getType() != ObservationType.UNKNOWN) {
+                    // print returned observation
                     printObservation(response);
                 } 
             }
@@ -64,10 +70,13 @@ public class Spotter {
         }
     }
 
+    // trail command
     public void trail(ObservationType type, String id) {
         try {
+            // create trace request and send it
             TraceRequest request = TraceRequest.newBuilder().setType(type).setId(id).build();
             List<TrackResponse> observations = frontend.trace(request).getObservationList();
+            // print observations
             observations.forEach((observation) -> printObservation(observation));
         } catch (StatusRuntimeException exception) {
            handleRuntimeException(exception);
@@ -79,6 +88,7 @@ public class Spotter {
     public void printObservation(TrackResponse observation) {
         String type;
         switch (observation.getType()) {
+            // translate observation type to string
             case PERSON:
                 type = "person";
                 break;
@@ -97,6 +107,7 @@ public class Spotter {
         return Instant.ofEpochSecond(timestamp.getSeconds(), timestamp.getNanos()).atZone(ZoneId.of("Portugal")).toLocalDateTime();
     }
 
+    // ping command
     public void ping() {
         try {
             PingRequest request = PingRequest.newBuilder().setMessage("Hello server, are you there!?").build();
@@ -106,6 +117,7 @@ public class Spotter {
         } 
     }
 
+    // clear command
     public void clear() {
         try {
             ClearRequest request = ClearRequest.newBuilder().build();
@@ -116,6 +128,7 @@ public class Spotter {
         }
     }
 
+    // init command
     public void init() {
         try {
             InitRequest request = InitRequest.newBuilder().build();
@@ -125,6 +138,8 @@ public class Spotter {
             handleRuntimeException(exception);
         }
     }
+
+    // AUXILIARY FUNCTIONS
 
     public void help() {
         System.out.println(
