@@ -17,7 +17,7 @@ public class EyeApp {
 		System.out.printf("Received %d arguments%n", args.length);
 
 		// check arguments
-		if (args.length < 2) {
+		if (args.length < 5) {
 			System.out.println("Incorrect amount of arguments!");
 			System.out.printf("Usage: java %s host port%n", EyeApp.class.getName());
 			return;
@@ -27,7 +27,6 @@ public class EyeApp {
 			System.out.printf("arg[%d] = %s%n", i, args[i]);
 		}
 
-        System.out.println("creating eye'");
         Eye eye;
         try {
             eye = new Eye(args[0], args[1], //

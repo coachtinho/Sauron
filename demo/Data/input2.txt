@@ -1,0 +1,10 @@
+# lote 1
+person,5111111
+car,20SD23
+car,20SD30
+
+zzz,5000
+
+#lote 2
+car,20SD24
+car,20SD30

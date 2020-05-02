@@ -30,9 +30,7 @@ public class Eye {
         _name = name;
         _latitude = latitude;
         _longitude = longitude;
-        System.out.println("creating frontend");
         _frontend = new SiloFrontend(host, port, instance);
-        System.out.println("created frontend frontend");
         _reports = new ArrayList<>();
         _instance = instance;
         register();

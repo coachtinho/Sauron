@@ -6,6 +6,8 @@ person,5111111
 car,20SD23
 car,20SD24
 car,10SD21
+car,20SD21
+car,20HD21
 
 #zzz,1000
 
