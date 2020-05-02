@@ -13,12 +13,6 @@ Sistemas Distribuídos 2019-2020, segundo semestre
   
 
 **Grupo A36**
-
-  
-  
-
-##  POR MAILS NA TABELA
-
   
 
 | Número | Nome          | Utilizador                                        | Correio                       |
