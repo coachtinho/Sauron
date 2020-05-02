@@ -8,6 +8,7 @@ import pt.tecnico.sauron.silo.grpc.Silo.TraceRequest;
 import pt.tecnico.sauron.silo.grpc.Silo.TrackMatchRequest;
 import pt.tecnico.sauron.silo.grpc.Silo.TrackRequest;
 import pt.tecnico.sauron.silo.grpc.Silo.TrackResponse;
+import pt.tecnico.sauron.silo.grpc.Silo.ObservationType;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -29,7 +30,7 @@ public class Spotter {
         frontend = new SiloFrontend(host, port, instance);
     }
 
-    public void spot(String type, String id) {
+    public void spot(ObservationType type, String id) {
         try {
             if (id.contains("*")) {
                 TrackMatchRequest request = TrackMatchRequest.newBuilder().setType(type).setId(id).build();
@@ -39,9 +40,9 @@ public class Spotter {
                     @Override
                     public int compare(TrackResponse t1, TrackResponse t2) {
                         switch (t1.getType()) {
-                            case "person":
+                            case PERSON:
                                 return ((Long) Long.parseLong(t1.getId())).compareTo((Long) Long.parseLong(t2.getId()));                               
-                            case "car":
+                            case CAR:
                                 return t1.getId().compareTo(t2.getId());  
                             default:
                                 return 0;
@@ -52,7 +53,7 @@ public class Spotter {
             } else {
                 TrackRequest request = TrackRequest.newBuilder().setType(type).setId(id).build();
                 TrackResponse response = frontend.track(request);
-                if (!response.getType().isBlank()) {
+                if (response.getType() != ObservationType.UNKNOWN) {
                     printObservation(response);
                 } 
             }
@@ -63,7 +64,7 @@ public class Spotter {
         }
     }
 
-    public void trail(String type, String id) {
+    public void trail(ObservationType type, String id) {
         try {
             TraceRequest request = TraceRequest.newBuilder().setType(type).setId(id).build();
             List<TrackResponse> observations = frontend.trace(request).getObservationList();
@@ -76,7 +77,19 @@ public class Spotter {
     }
 
     public void printObservation(TrackResponse observation) {
-        System.out.printf("%s,%s,%s,%s,%f,%f%n", observation.getType(), observation.getId(),  timeConverter(observation.getTimestamp()).toString(), 
+        String type;
+        switch (observation.getType()) {
+            case PERSON:
+                type = "person";
+                break;
+            case CAR:
+                type = "car";
+                break;
+            default:
+                type = "unknown";
+
+        }
+        System.out.printf("%s,%s,%s,%s,%f,%f%n", type, observation.getId(),  timeConverter(observation.getTimestamp()).toString(), 
                 observation.getName(), observation.getLatitude(), observation.getLongitude());
     }
 
