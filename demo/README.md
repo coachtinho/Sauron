@@ -314,7 +314,7 @@ car,20SD24,<timestamp>,Alameda,-25.284736,30.621354
 car,20SD24,<timestamp>,Alameda,-25.284736,30.621354
 ```
 
-## 2.7. *Help*
+### 2.7. *Help*
 
 Para ver todos os comandos suportados pelo spotter pode ser feito:
 
@@ -322,7 +322,7 @@ Para ver todos os comandos suportados pelo spotter pode ser feito:
 > help
 ```
 
-## 2.8. *Exit*
+### 2.8. *Exit*
 
 Para sair da aplicação spotter pode ser usado o comando:
 
@@ -350,10 +350,181 @@ mvn verify
 
 Os 47 testes devem ter corrido sem erros ou falhas, testando assim por completo todas as operações do Silo.
 
+## 4. Replicação e tolerância a faltas
+
+Nesta secção vai ser mostrado o funcionamento do protocolo de gossip e os mecanismos de tolerância a faltas. Para lançar os servidores deve ser dado como argumento da linha de comandos o número da instância e o número total de réplicas (ver em 4.1 como o fazer) ou adicionar ao pom.xml do servidor. É necessário também ter todos os módulos compilados (ver 1.1) e o servidor de nomes (ZooKeeper) a correr. 
+
+### 4.1 Funcionamento normal
+
+Para este teste é necessário lançar duas réplicas, um eye e um spotter. Para lançar as réplicas devem ser corridos os seguintes comandos na pasta *silo-server* (uma réplica em cada consola):
+
+```
+$ mvn exec:java -Dinstance="1" -DreplicaCount="2"
+$ mvn exec:java -Dinstance="2" -DreplicaCount="2"
+```
+
+para lançar o spotter deve ser executado o seguinte comando da pasta *spotter*:
+
+```
+$ mvn exec:java -Dinstance="1"
+```
+
+Para se ver o funcionamento do gossip a funcionar lançe um eye:
+
+```
+$ mvn exec:java -Dinstance="2"
+```
+
+Pode observar na consola da réplica 2 (nos próximos 30 segundos) a seguinte mensagem:
+
+```
+Sending gossip message to localhost:8081
+```
+
+que corresponse ao gossip do registo da câmera. Do lado da réplica 1 pode ser vista a mesagem indicativa da receção do gossip:
+
+```
+Caught gossip
+```
+
+De seguida faça um report no eye da seguinta forma:
+
+```
+> person,12345
+> 
+> 
+```
+
+Antes de ser feito o gossip confirme que o spotter não consegue ver o novo report (não deve ser imprimido nada na consola):
+
+```
+> spot person 12345
+```
+
+depois de ser feito o gossip (pode ser visto na consola da réplica 2), volte a fazer o comando de spot e poderá ver o report feito na outra réplica.
+
+```
+person,12345,<timestamp>,Alameda,-25.284736,30.621354
+```
+
+### 4.2 Tolerância a faltas
+
+Neste teste é mostrado o mecanismo de tolerância a faltas num caso geral. Neste teste são precisas duas réplicas (como lançar as réplicas está descrito na secção 4.1) e um spotter a ser lançado da seguinte forma da pasta correspondente:
+
+```
+$ mvn exec:java
+```
+
+Simular falta encerrando a réplica a que se ligou.
+
+Executar o comando:
+
+```
+> spot person 12345
+```
+
+Como a réplica não está disponível o mecanismo de tolerância a faltas troca para a outra réplica e re-executa o comando (não deve ser apresentado output):
+O mecanismo de tolerância a faltas deve exprimir-se da seguinte forma:
+
+```
+Failed to contact replica at localhost:<porto da réplica a que se ligou>
+Retrying in 2 seconds...
+Failed to contact replica at localhost:<porto da réplica a que se ligou>
+Retrying in 4 seconds...
+Failed to contact replica at localhost:<porto da réplica a que se ligou>
+Trying to contact another replica to tolerate fault...
+Trying to contact replica at localhost:<porto da nova réplica>...
+Found new replica at localhost:<porto da nova réplica>
+Retrying operation...
+```
+
+De seguida encerrar a última réplica e re-executar o comando do spotter:
+
+```
+> spot person 12345
+```
+
+O mecanismo de tolerância a faltas deve revelar-se do seguinte modo tendo em conta que já não existem mais réplicas disponíveis:
+
+```
+Failed to contact replica at localhost:<porto da réplica a que se ligou>
+Retrying in 2 seconds...
+Failed to contact replica at localhost:<porto da réplica a que se ligou>
+Retrying in 4 seconds...
+Failed to contact replica at localhost:<porto da réplica a que se ligou>
+Trying to contact another replica to tolerate fault...
+Error connecting to random replica:Tried all known replicas without success
+```
+
+Se depois eventualmente uma réplica voltar a estar disponível basta executar um comando qualquer e a conexão fica restabelicida.
+
+### 4.3 Leituras coerentes e tolerância a faltas
+
+Neste teste é mostrado o mecanismo de tolerância a faltas em funcionamento bem como a coerência das leituras nos clientes. Para este teste são precisos duas réplicas (como lançar as réplicas está descrito na secção 4.1) bem como um eye e um spotter.
+Para o spotter na pasta correspondente:
+
+```
+$ mvn exec:java
+```
+
+O eye deve ligar-se à mesma instância a que se ligou o spotter:
+
+```
+$ mvn exec:java -Dinstance="<instancia do spotter>"
+```
+
+**Os próximos passos devem ser executados com rapidez e antes de ser feito o gossip do report**
+
+no eye deve ser feito um report da seguinte forma:
+
+```
+> person,12345
+>
+>
+```
+
+o spotter lê esse report:
+
+```
+> spot person 12345
+person,12345,<timestamp>,Alameda,-25.284736,30.621354
+```
+
+E a réplica deve ser encerrada **Antes de ser feito o gossip** (para ser simulada uma falta). Se o gossip foi feito o teste deve ser reiniciado.
+De seguida o spotter deve ler o report novamente:
+
+```
+> spot person 12345
+```
+
+É possível observar o comportamento da tolerância a faltas(Spotter a mudar de instância). Pode ser observado também que apesar da réplica nova não ter conhecimento do report é mostrado ao cliente uma versão coerente da leitura:
+
+```
+person,12345,<timestamp>,Alameda,-25.284736,30.621354
+```
+
+### 4.4 Dependência Causal
+
+Neste teste é mostrado como foi resolvido as dependências causais entre os reports e o registo da câmera. Vão ser precisos duas réplicas e um eye (Como lançar as réplicas está na seccção 4.1).
+
+Desta vez não especifique a instância a que a câmera se deve ligar:
+
+```
+$ mvn exec:java
+```
+
+Antes de ser feito o gossip encerre a replica a que a camera se conectou.
+Tente fazer um report:
+
+```
+> person,12345
 
 
+```
 
-## 4. Considerações Finais
+Poderá ver o mecanismo de tolerância a faltas em funcionamento e a operação de report a ser executada mesmo sem ter sido feito (explicitamente) o gossip do registo da câmera.
 
-Estes testes não cobrem tudo, pelo que devem ter sempre em conta os testes de integração e o código.
+## 5. Considerações Finais
+
+Estes testes não cobrem tudo, pelo que devem ter sempre em conta os testes de integração e o código. Foram omitidos nos testes de tolerância a faltas/replicação o exemplo para todos os comandos existentes. É importante relembrar que as operações de controlo não estão implementadas de forma distribuída.
 
