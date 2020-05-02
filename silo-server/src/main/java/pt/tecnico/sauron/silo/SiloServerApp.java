@@ -30,6 +30,11 @@ public class SiloServerApp {
         final Integer serverPort = Integer.parseInt(args[4]);
         final Integer replicaCount = Integer.parseInt(args[5]);
 
+        if (instance > replicaCount) {
+            System.err.printf("Instance number cannot be greater than replica count. %d>%d\n", instance, replicaCount);
+            return;
+        }
+
         // Dependencies
         final SiloServer silo = new SiloServer();
         final ReplicaManager replicaManager = new ReplicaManager(replicaCount, instance, zooHost, zooPort, silo);

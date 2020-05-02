@@ -25,7 +25,6 @@ import pt.tecnico.sauron.silo.grpc.Silo.ReportRequest.ReportItem;
 
 public class ReplicaManager extends GossipImplBase {
     private final int GOSSIP_INTERVAL = 30;
-    private final int _replicaCount;
     private final int _instance;
     private Vector<Integer> _TS;
     private final SiloServer _siloServer;
@@ -41,7 +40,6 @@ public class ReplicaManager extends GossipImplBase {
     ScheduledExecutorService _executor;
 
     public ReplicaManager(int replicaCount, int instance, String zooHost, String zooPort, SiloServer siloServer) {
-        _replicaCount = replicaCount;
         _instance = instance;
         _siloServer = siloServer;
         _TS = new Vector<Integer>();
@@ -60,7 +58,7 @@ public class ReplicaManager extends GossipImplBase {
             public void run() {
                 // send gossip only when there's something to say
                 if (!_camJoinLog.isEmpty() || !_reportLog.isEmpty()) {
-                    _frontend.gossipData(_camJoinLog, _reportLog, new Vector<>(_TS));
+                    _frontend.sendGossip(_camJoinLog, _reportLog, new Vector<>(_TS));
                     _camJoinLog.clear();
                     _reportLog.clear();
                 }
@@ -76,42 +74,11 @@ public class ReplicaManager extends GossipImplBase {
         _executor.shutdownNow();
     }
 
-    public Vector<Integer> generateOtherTS(List<Integer> tsList) {
-        // get client's valueTS from list
-        Vector<Integer> otherTS = new Vector<Integer>(tsList.size());
-
-        for (int ts : tsList)
-            otherTS.add(ts);
-
-        synchronized (_TS) {
-            // ensure both vectors have same size
-            if (_TS.size() > otherTS.size())
-                for (int i = otherTS.size(); i < _TS.size(); i++)
-                    otherTS.add(0);
-            else if (_TS.size() < otherTS.size())
-                for (int i = _TS.size(); i < otherTS.size(); i++)
-                    _TS.add(0);
-        }
-
-        return otherTS;
-    }
-
-    public boolean canUpdate(Vector<Integer> otherTS) {
-        synchronized (_TS) {
-            for (int i = 0; i < _TS.size(); i++)
-                if (otherTS.get(i) < _TS.get(i))
-                    return false;
-        }
-        return true;
-
-    }
-
     public Vector<Integer> update() {
         synchronized (_TS) {
             // Increment timestamp
             _TS.setElementAt(_TS.get(_instance - 1) + 1, _instance - 1);
         }
-
         return _TS;
     }
 
@@ -167,15 +134,17 @@ public class ReplicaManager extends GossipImplBase {
                 .toLocalDateTime();
     }
 
-    public void logReport(ReportRequest report, LocalDateTime timestamp) {
-        // TODO: move this to private function
-        Timestamp instant = Timestamp.newBuilder()
-                .setSeconds(timestamp.atZone(ZoneId.systemDefault()).toInstant().getEpochSecond()).build();
+    private Timestamp localDateTimeToTimestamp(LocalDateTime date) {
+        return Timestamp.newBuilder().setSeconds(date.atZone(ZoneId.systemDefault()).toInstant().getEpochSecond())
+                .build();
+    }
+
+    public void logReport(ReportRequest report, LocalDateTime date) {
 
         ReportRequest request = ReportRequest.newBuilder() //
-                .addAllReports(report.getReportsList()) //
-                .setCameraName(report.getCameraName()) //
-                .setTimestamp(instant) //
+                .addAllReports(report.getReportsList()) // add item list (i.e. people, cars)
+                .setCameraName(report.getCameraName()) // add camera name
+                .setTimestamp(localDateTimeToTimestamp(date)) // add time of report
                 .build();
 
         _reportLog.add(request);
@@ -183,14 +152,6 @@ public class ReplicaManager extends GossipImplBase {
 
     public void logCamRegisterRequest(CameraRegistrationRequest cameraRegistrationRequest) {
         _camJoinLog.add(cameraRegistrationRequest);
-    }
-
-    public void queueReport(ReportRequest report) {
-        _reportQueue.add(report);
-    }
-
-    public void queueCamRegisterRequest(CameraRegistrationRequest cameraRegistrationRequest) {
-        _camJoinQueue.add(cameraRegistrationRequest);
     }
 
     @Override
