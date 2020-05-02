@@ -45,6 +45,7 @@ public class Eye {
 
         boolean validID = false;
         switch (type) {
+            // check if type is valid
             case "car":
                 if (!id.matches("[A-Z0-9]{6}"))
                     System.out.println("Id " + id + " is illegal for type car");
@@ -115,6 +116,7 @@ public class Eye {
 
     public void register() {
         try {
+            // register camera in server
             CameraRegistrationRequest request = CameraRegistrationRequest.newBuilder().setName(_name)
                     .setLatitude(_latitude).setLongitude(_longitude).build();
             CameraRegistrationResponse response = _frontend.camJoin(request);
@@ -138,6 +140,8 @@ public class Eye {
         }
 
     }
+
+    // AUXILARY FUNCTIONS
 
     private void handleReportFailure(FailureItem failure) {
         System.out.println(failure.getType() + "," + failure.getId() + ": " + failure.getMessage());
@@ -165,6 +169,7 @@ public class Eye {
     }
 
     class Item {
+        // item used to fill the reports list
         private final ObservationType _type;
         private final String _id;
 
