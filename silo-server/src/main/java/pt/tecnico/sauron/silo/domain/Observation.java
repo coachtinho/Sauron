@@ -5,6 +5,8 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import pt.tecnico.sauron.silo.grpc.Silo.ObservationType;;
+
 
 public abstract class Observation {
 
@@ -28,7 +30,7 @@ public abstract class Observation {
 
     public abstract String getId();
 
-    public abstract String getType();
+    public abstract ObservationType getType();
 
     public String getCamName() {
         return _cam.getName();

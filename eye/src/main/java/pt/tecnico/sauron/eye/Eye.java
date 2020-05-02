@@ -4,6 +4,7 @@ import pt.tecnico.sauron.silo.client.SiloFrontend;
 import pt.tecnico.sauron.silo.client.SiloFrontendException;
 import pt.tecnico.sauron.silo.grpc.Silo.CameraRegistrationRequest;
 import pt.tecnico.sauron.silo.grpc.Silo.CameraRegistrationResponse;
+import pt.tecnico.sauron.silo.grpc.Silo.ObservationType;
 import pt.tecnico.sauron.silo.grpc.Silo.ReportRequest;
 import pt.tecnico.sauron.silo.grpc.Silo.ReportResponse;
 import pt.tecnico.sauron.silo.grpc.Silo.ReportRequest.ReportItem;
@@ -63,7 +64,19 @@ public class Eye {
 
         // Add item to list
         if (validID) {
-            final Item item = new Item(type, id);
+            ObservationType newType;
+            switch (type) {
+                case "person":
+                    newType = ObservationType.PERSON;
+                    break;
+                case "car":
+                    newType = ObservationType.CAR;
+                    break;
+                default:
+                    newType = ObservationType.UNKNOWN;
+
+            }
+            final Item item = new Item(newType, id);
             _reports.add(item);
         }
     }
@@ -152,10 +165,10 @@ public class Eye {
     }
 
     class Item {
-        private final String _type;
+        private final ObservationType _type;
         private final String _id;
 
-        Item(final String type, final String id) {
+        Item(final ObservationType type, final String id) {
             _type = type;
             _id = id;
         }
@@ -164,7 +177,7 @@ public class Eye {
             return _id;
         }
 
-        String getType() {
+        ObservationType getType() {
             return _type;
         }
 

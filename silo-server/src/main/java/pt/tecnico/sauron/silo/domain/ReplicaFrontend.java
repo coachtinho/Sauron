@@ -32,31 +32,35 @@ public class ReplicaFrontend {
         _instance = instance;
     }
 
-    public void gossipData(Vector<CameraRegistrationRequest> camJoinLog, Vector<ReportRequest> reportLog,
+    public void sendGossip(Vector<CameraRegistrationRequest> camJoinLog, Vector<ReportRequest> reportLog,
             Vector<Integer> ts) {
 
         // Create gossip message
-        final GossipRequest request = GossipRequest.newBuilder()//
-                .addAllCameras(camJoinLog) // add camera requests
-                .addAllReports(reportLog)// add reports
-                .addAllTs(ts) // add server timestamp
-                .build();
+        GossipRequest.Builder requestBuilder = GossipRequest.newBuilder();//
+
+        // add camera registration requests
+        if (!camJoinLog.isEmpty())
+            requestBuilder.addAllCameras(camJoinLog);
+
+        // add report requests
+        if (!reportLog.isEmpty())
+            requestBuilder.addAllReports(reportLog);
+
+        // add server timestamp
+        final GossipRequest request = requestBuilder.addAllTs(ts).build();
 
         try {
             Collection<ZKRecord> records = this.zkNaming.listRecords(BASE_PATH);
             ExecutorService pool = Executors.newCachedThreadPool();
 
             for (ZKRecord record : records) {
-                if (record.getPath().matches(".*\\/" + _instance + "$")) {
-                    System.out.println("Myself: " + record.getPath());
+                if (record.getPath().matches(".*\\/" + _instance + "$")) // ignore ourselved form gossip list
                     continue;
-                }
 
-                System.out.println("Gossiping to: " + record.getPath());
                 pool.execute(new SendGossipTask(record, request));
             }
         } catch (ZKNamingException e) {
-            System.out.println("An error ocurred with zookeeper");
+            System.out.println("An error ocurred with zookeeper: could not retrieve node records");
         }
     }
 

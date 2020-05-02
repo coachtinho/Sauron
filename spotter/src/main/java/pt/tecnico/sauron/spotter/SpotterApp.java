@@ -4,6 +4,7 @@ import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 import pt.tecnico.sauron.silo.client.SiloFrontendException;
+import pt.tecnico.sauron.silo.grpc.Silo.ObservationType;
 
 public class SpotterApp {
 
@@ -39,6 +40,7 @@ public class SpotterApp {
 		// Main cycle
 		try (Scanner scanner = new Scanner(System.in)) {
 			while (true) {
+				ObservationType type;
 				keyword = scanner.next();
 
 				switch (keyword) {
@@ -46,7 +48,18 @@ public class SpotterApp {
 						line = scanner.nextLine();
 						if (line.matches(" [a-z]+ [a-zA-Z0-9*]+")) {
 							arguments = line.split(" ");
-							spotter.spot(arguments[1], arguments[2]);
+							switch (arguments[1]) {
+								case "person":
+									type = ObservationType.PERSON;
+									break;
+								case "car":
+									type = ObservationType.CAR;
+									break;
+								default:
+									type = ObservationType.UNKNOWN;
+
+							}
+							spotter.spot(type, arguments[2]);
 						} else {
 							System.out.println("Invalid arguments");
 						}
@@ -55,7 +68,18 @@ public class SpotterApp {
 						line = scanner.nextLine();
 						if (line.matches(" [a-z]+ [a-zA-Z0-9]+")) {
 							arguments = line.split(" ");
-							spotter.trail(arguments[1], arguments[2]);
+							switch (arguments[1]) {
+								case "person":
+									type = ObservationType.PERSON;
+									break;
+								case "car":
+									type = ObservationType.CAR;
+									break;
+								default:
+									type = ObservationType.UNKNOWN;
+
+							}
+							spotter.trail(type, arguments[2]);
 						} else {
 							System.out.println("Invalid arguments");
 						}

@@ -14,6 +14,7 @@ import pt.tecnico.sauron.silo.grpc.Silo.TrackMatchRequest;
 import pt.tecnico.sauron.silo.grpc.Silo.TrackMatchResponse;
 import pt.tecnico.sauron.silo.grpc.Silo.TrackResponse;
 import pt.tecnico.sauron.silo.grpc.Silo.ReportRequest.ReportItem;
+import pt.tecnico.sauron.silo.grpc.Silo.ObservationType;
 
 import static io.grpc.Status.INVALID_ARGUMENT;
 import io.grpc.StatusRuntimeException;
@@ -33,7 +34,7 @@ public class TrackMatchIT extends BaseIT {
     public static void oneTimeSetUp() throws StatusRuntimeException, InterruptedException, SiloFrontendException {
         host = testProps.getProperty("zoo.host");
         port = testProps.getProperty("zoo.port");
-        instance = "1";
+        instance = testProps.getProperty("server.instance");
         offset = Integer.parseInt(testProps.getProperty("time.tolerance"));
         frontend = new SiloFrontend(host, port, instance);
         
@@ -47,22 +48,22 @@ public class TrackMatchIT extends BaseIT {
         // Observations
         ReportRequest.Builder reportRequest1Builder = ReportRequest.newBuilder();
         reportRequest1Builder.setCameraName(camRequest1.getName());
-        reportRequest1Builder.addReports(ReportItem.newBuilder().setType("person").setId("1111").build());
-        reportRequest1Builder.addReports(ReportItem.newBuilder().setType("person").setId("1112").build());
-        reportRequest1Builder.addReports(ReportItem.newBuilder().setType("car").setId("11AA11").build());
-        reportRequest1Builder.addReports(ReportItem.newBuilder().setType("car").setId("BA1111").build());
+        reportRequest1Builder.addReports(ReportItem.newBuilder().setType(ObservationType.PERSON).setId("1111").build());
+        reportRequest1Builder.addReports(ReportItem.newBuilder().setType(ObservationType.PERSON).setId("1112").build());
+        reportRequest1Builder.addReports(ReportItem.newBuilder().setType(ObservationType.CAR).setId("11AA11").build());
+        reportRequest1Builder.addReports(ReportItem.newBuilder().setType(ObservationType.CAR).setId("BA1111").build());
         reportRequest1 = reportRequest1Builder.build();
         frontend.report(reportRequest1);
         Thread.sleep(1000);
         ReportRequest.Builder reportRequest2Builder = ReportRequest.newBuilder();
         reportRequest2Builder.setCameraName(camRequest2.getName());
-        reportRequest2Builder.addReports(ReportItem.newBuilder().setType("person").setId("1111").build());
-        reportRequest2Builder.addReports(ReportItem.newBuilder().setType("person").setId("2113").build());
-        reportRequest2Builder.addReports(ReportItem.newBuilder().setType("person").setId("2114").build());
-        reportRequest2Builder.addReports(ReportItem.newBuilder().setType("car").setId("11AA11").build());
-        reportRequest2Builder.addReports(ReportItem.newBuilder().setType("car").setId("AA1112").build());
-        reportRequest2Builder.addReports(ReportItem.newBuilder().setType("car").setId("BA1111").build());
-        reportRequest2Builder.addReports(ReportItem.newBuilder().setType("car").setId("BA1112").build());   
+        reportRequest2Builder.addReports(ReportItem.newBuilder().setType(ObservationType.PERSON).setId("1111").build());
+        reportRequest2Builder.addReports(ReportItem.newBuilder().setType(ObservationType.PERSON).setId("2113").build());
+        reportRequest2Builder.addReports(ReportItem.newBuilder().setType(ObservationType.PERSON).setId("2114").build());
+        reportRequest2Builder.addReports(ReportItem.newBuilder().setType(ObservationType.CAR).setId("11AA11").build());
+        reportRequest2Builder.addReports(ReportItem.newBuilder().setType(ObservationType.CAR).setId("AA1112").build());
+        reportRequest2Builder.addReports(ReportItem.newBuilder().setType(ObservationType.CAR).setId("BA1111").build());
+        reportRequest2Builder.addReports(ReportItem.newBuilder().setType(ObservationType.CAR).setId("BA1112").build());   
         reportRequest2 = reportRequest2Builder.build();
         frontend.report(reportRequest2);
     }
@@ -83,7 +84,7 @@ public class TrackMatchIT extends BaseIT {
 
     @Test
     public void trackMatchPerfectMatchPersonTest() throws SiloFrontendException {
-        String reportType = "person";
+        ObservationType reportType = ObservationType.PERSON;
         String reportId = "1111";
         TrackMatchRequest request = TrackMatchRequest.newBuilder().setType(reportType).setId(reportId).build();
         List<TrackResponse> observationList = frontend.trackMatch(request).getObservationList();
@@ -101,7 +102,7 @@ public class TrackMatchIT extends BaseIT {
 
     @Test
     public void trackMatchPerfectMatchCarTest() throws SiloFrontendException {
-        String reportType = "car";
+        ObservationType reportType = ObservationType.CAR;
         String reportId = "11AA11";
         TrackMatchRequest request = TrackMatchRequest.newBuilder().setType(reportType).setId(reportId).build();
         List<TrackResponse> observationList = frontend.trackMatch(request).getObservationList();
@@ -119,7 +120,7 @@ public class TrackMatchIT extends BaseIT {
 
     @Test
     public void trackMatchStartsWithTest() throws SiloFrontendException {
-        String reportType = "person";
+        ObservationType reportType = ObservationType.PERSON;
         TrackMatchRequest request = TrackMatchRequest.newBuilder().setType(reportType).setId("1*").build();
         TrackMatchResponse response = frontend.trackMatch(request);
         List<TrackResponse> trackResponses = response.getObservationList();
@@ -144,7 +145,7 @@ public class TrackMatchIT extends BaseIT {
 
     @Test
     public void trackMatchEndsWithTest() throws SiloFrontendException {
-        String reportType = "car";
+        ObservationType reportType = ObservationType.CAR;
         TrackMatchRequest request = TrackMatchRequest.newBuilder().setType(reportType).setId("*1").build();
         TrackMatchResponse response = frontend.trackMatch(request);
         List<TrackResponse> trackResponses = response.getObservationList();
@@ -163,7 +164,7 @@ public class TrackMatchIT extends BaseIT {
 
     @Test
     public void trackMatchStartWithEndsWithTest() throws SiloFrontendException {
-        String reportType = "car";
+        ObservationType reportType = ObservationType.CAR;
         TrackMatchRequest request = TrackMatchRequest.newBuilder().setType(reportType).setId("B*1").build();
         List<TrackResponse> observationList = frontend.trackMatch(request).getObservationList();
         assertEquals(1, observationList.size());
@@ -189,25 +190,16 @@ public class TrackMatchIT extends BaseIT {
 
     @Test
     public void trackMatchEmptyIdTest() throws SiloFrontendException {
-        String reportType = reportRequest1.getReports(0).getType();
+        ObservationType reportType = reportRequest1.getReports(0).getType();
         TrackMatchRequest request = TrackMatchRequest.newBuilder().setType(reportType).build();
         StatusRuntimeException exception = assertThrows(StatusRuntimeException.class, () -> frontend.trackMatch(request));
         assertEquals(INVALID_ARGUMENT.getCode(), exception.getStatus().getCode());
         assertEquals("INVALID_ARGUMENT: Id cannot be empty!", exception.getMessage());
     }
-    
-    @Test
-    public void trackMatchInvalidTypeTest() throws SiloFrontendException {
-        String reportId = reportRequest1.getReports(0).getId();
-        TrackMatchRequest request = TrackMatchRequest.newBuilder().setType("a").setId(reportId).build();
-        StatusRuntimeException exception = assertThrows(StatusRuntimeException.class, () -> frontend.trackMatch(request));
-        assertEquals(INVALID_ARGUMENT.getCode(), exception.getStatus().getCode());
-        assertEquals("INVALID_ARGUMENT: Type is not a valid observation!", exception.getMessage());
-    }
 
     @Test
     public void trackMatchNonExistingPersonTest() throws SiloFrontendException {
-        String reportType = reportRequest1.getReports(0).getType();
+        ObservationType reportType = reportRequest1.getReports(0).getType();
         TrackMatchRequest request = TrackMatchRequest.newBuilder().setType(reportType).setId("123").build();
         TrackMatchResponse response = frontend.trackMatch(request);
         assertEquals(0, response.getObservationList().size());
@@ -215,7 +207,7 @@ public class TrackMatchIT extends BaseIT {
 
     @Test
     public void trackMatchNonExistingCarTest() throws SiloFrontendException {
-        String reportType = reportRequest1.getReports(2).getType();
+        ObservationType reportType = reportRequest1.getReports(2).getType();
         TrackMatchRequest request = TrackMatchRequest.newBuilder().setType(reportType).setId("AA12AA").build();
         TrackMatchResponse response = frontend.trackMatch(request);
         assertEquals(0, response.getObservationList().size());

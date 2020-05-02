@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 import com.google.protobuf.Timestamp;
 
 import io.grpc.stub.StreamObserver;
+import pt.tecnico.sauron.silo.domain.Observation;
 import pt.tecnico.sauron.silo.domain.ReplicaFrontend;
 import pt.tecnico.sauron.silo.domain.SiloException;
 import pt.tecnico.sauron.silo.domain.SiloServer;
@@ -22,10 +23,10 @@ import pt.tecnico.sauron.silo.grpc.Silo.GossipRequest;
 import pt.tecnico.sauron.silo.grpc.Silo.GossipResponse;
 import pt.tecnico.sauron.silo.grpc.Silo.ReportRequest;
 import pt.tecnico.sauron.silo.grpc.Silo.ReportRequest.ReportItem;
+import pt.tecnico.sauron.silo.grpc.Silo.ObservationType;
 
 public class ReplicaManager extends GossipImplBase {
     private final int GOSSIP_INTERVAL = 30;
-    private final int _replicaCount;
     private final int _instance;
     private Vector<Integer> _TS;
     private final SiloServer _siloServer;
@@ -37,9 +38,10 @@ public class ReplicaManager extends GossipImplBase {
     private Vector<ReportRequest> _reportQueue;
     // frontend
     ReplicaFrontend _frontend;
+    // thread pool for gossip messages
+    ScheduledExecutorService _executor;
 
     public ReplicaManager(int replicaCount, int instance, String zooHost, String zooPort, SiloServer siloServer) {
-        _replicaCount = replicaCount;
         _instance = instance;
         _siloServer = siloServer;
         _TS = new Vector<Integer>();
@@ -54,49 +56,24 @@ public class ReplicaManager extends GossipImplBase {
         _frontend = new ReplicaFrontend(zooHost, zooPort, instance);
 
         // Set gossip message timer
-        Runnable helloRunnable = new Runnable() {
+        Runnable gossipRunnable = new Runnable() {
             public void run() {
-                // System.out.println("Started...");
-                _frontend.gossipData(_camJoinLog, _reportLog, new Vector<>(_TS));
-                _camJoinLog.clear();
-                _reportLog.clear();
-                // System.out.println("Stopped...");
+                // send gossip only when there's something to say
+                if (!_camJoinLog.isEmpty() || !_reportLog.isEmpty()) {
+                    _frontend.sendGossip(_camJoinLog, _reportLog, new Vector<>(_TS));
+                    _camJoinLog.clear();
+                    _reportLog.clear();
+                }
             }
         };
 
-        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-        executor.scheduleAtFixedRate(helloRunnable, GOSSIP_INTERVAL, GOSSIP_INTERVAL, TimeUnit.SECONDS);
+        _executor = Executors.newScheduledThreadPool(1);
+        _executor.scheduleAtFixedRate(gossipRunnable, GOSSIP_INTERVAL, GOSSIP_INTERVAL, TimeUnit.SECONDS);
 
     }
 
-    public Vector<Integer> generateOtherTS(List<Integer> tsList) {
-        // get client's valueTS from list
-        Vector<Integer> otherTS = new Vector<Integer>(tsList.size());
-
-        for (int ts : tsList)
-            otherTS.add(ts);
-
-        synchronized (_TS) {
-            // ensure both vectors have same size
-            if (_TS.size() > otherTS.size())
-                for (int i = otherTS.size(); i < _TS.size(); i++)
-                    otherTS.add(0);
-            else if (_TS.size() < otherTS.size())
-                for (int i = _TS.size(); i < otherTS.size(); i++)
-                    _TS.add(0);
-        }
-
-        return otherTS;
-    }
-
-    public boolean canUpdate(Vector<Integer> otherTS) {
-        synchronized (_TS) {
-            for (int i = 0; i < _TS.size(); i++)
-                if (otherTS.get(i) < _TS.get(i))
-                    return false;
-        }
-        return true;
-
+    public void stopGossip() {
+        _executor.shutdownNow();
     }
 
     public Vector<Integer> update() {
@@ -104,7 +81,6 @@ public class ReplicaManager extends GossipImplBase {
             // Increment timestamp
             _TS.setElementAt(_TS.get(_instance - 1) + 1, _instance - 1);
         }
-
         return _TS;
     }
 
@@ -135,7 +111,7 @@ public class ReplicaManager extends GossipImplBase {
                 LocalDateTime timestamp = timestampToLocalDateTime(r.getTimestamp());
                 for (ReportItem item : items) {
                     String cameraName = r.getCameraName();
-                    String type = item.getType();
+                    ObservationType type = item.getType();
                     String id = item.getId();
                     if (_siloServer.isValidType(type) && _siloServer.isValidId(type, id))
                         _siloServer.reportObservation(cameraName, type, id, timestamp);
@@ -160,15 +136,17 @@ public class ReplicaManager extends GossipImplBase {
                 .toLocalDateTime();
     }
 
-    public void logReport(ReportRequest report, LocalDateTime timestamp) {
-        // TODO: move this to private function
-        Timestamp instant = Timestamp.newBuilder()
-                .setSeconds(timestamp.atZone(ZoneId.systemDefault()).toInstant().getEpochSecond()).build();
+    private Timestamp localDateTimeToTimestamp(LocalDateTime date) {
+        return Timestamp.newBuilder().setSeconds(date.atZone(ZoneId.systemDefault()).toInstant().getEpochSecond())
+                .build();
+    }
+
+    public void logReport(ReportRequest report, LocalDateTime date) {
 
         ReportRequest request = ReportRequest.newBuilder() //
-                .addAllReports(report.getReportsList()) //
-                .setCameraName(report.getCameraName()) //
-                .setTimestamp(instant) //
+                .addAllReports(report.getReportsList()) // add item list (i.e. people, cars)
+                .setCameraName(report.getCameraName()) // add camera name
+                .setTimestamp(localDateTimeToTimestamp(date)) // add time of report
                 .build();
 
         _reportLog.add(request);
@@ -176,14 +154,6 @@ public class ReplicaManager extends GossipImplBase {
 
     public void logCamRegisterRequest(CameraRegistrationRequest cameraRegistrationRequest) {
         _camJoinLog.add(cameraRegistrationRequest);
-    }
-
-    public void queueReport(ReportRequest report) {
-        _reportQueue.add(report);
-    }
-
-    public void queueCamRegisterRequest(CameraRegistrationRequest cameraRegistrationRequest) {
-        _camJoinQueue.add(cameraRegistrationRequest);
     }
 
     @Override
